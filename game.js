@@ -58,7 +58,7 @@ const LK = [
   ['#b5764a', '#27c', '#eee', '#357', '#222'],
   ['#e0b08a', '#421', '#e88', '#536', '#222'],
   ['#c98a5e', '#1f2a44', '#7db3e3', '#1f2a44', '#111'],
-  ['#c98a5e', '#a11', '#33203a', '#33203a', '#111'],
+  ['#c98a5e', '#1b2a4a', '#1f3566', '#1b2540', '#111'],
 ];
 const EN = {
   c: { k: 4, hp: 5, spd: 125, dmg: 6, rng: 52, say: ['¡CHICLE A CIEN!', '¡TRES POR LUCA!', '¡UNA AYUDITA, CASERO!'], st: 1 },
@@ -145,7 +145,7 @@ function dude(x, k, f) {
     u(2, 8, 12, 7, tp); u(2, 10, 12, 1, '#f2c500'); u(2, 12, 12, 1, '#2a8'); u(2, 14, 12, 1, '#fff');
     u(4, 0, 7, 3, hr); u(4, 2, 7, 1, '#f2c500'); u(5, 3, 2, 4, hr); u(5, 7, 1, 2, '#f2c500'); u(6, -1, 3, 1, '#f2c500'); u(7, -1, 1, 1, '#fff');
   }
-  // guatita para los grandotes: agüita, guardia e inspector
+  // guatita para los grandotes: agüita, guardia y guardia municipal
   if (k == 5 || k > 6) { u(10, 9, 3, 6, tp); u(3, 8, 2, 3, tp); }
   if (k == 4) { // chiclero: flaco, jockey, polera a rayas, mondadientes, caja colgando del cuello
     u(4, 1, 7, 2, hr); u(10, 2, 3, 1, hr); u(8, 6, 3, 1, dk(sk, 0.8)); u(11, 6, 2, 1, '#e8d08a');
@@ -164,10 +164,11 @@ function dude(x, k, f) {
     u(4, 1, 7, 2, hr); u(10, 2, 3, 1, '#000'); u(6, 1, 1, 1, '#fc3'); u(8, 4, 3, 1, '#111'); u(8, 5, 3, 1, '#2a1a10');
     u(4, 9, 9, 5, '#c6e00a'); u(4, 11, 9, 1, '#ccc'); u(7, 15, 2, 1, '#fc3'); u(2, 10, 2, 3, '#222'); u(2, 7, 1, 3, '#222');
   }
-  if (k == 8) { // inspector jefe: quepis con galón, bigotazo, charreteras, medallas, corbata, pito
-    u(3, 0, 9, 2, hr); u(3, 2, 9, 1, '#fc3'); u(10, 3, 3, 1, '#000'); u(8, 5, 4, 1, '#eee'); u(7, 6, 1, 1, '#eee');
-    u(3, 8, 3, 1, '#fc3'); u(10, 8, 3, 1, '#fc3'); u(7, 8, 2, 2, '#fff'); u(7, 10, 1, 4, '#d22');
-    u(5, 10, 1, 2, '#3af'); u(5, 12, 1, 1, '#fc3'); u(11, 11, 1, 1, '#fc3'); u(9, 9, 1, 3, '#ddd'); u(9, 12, 1, 1, '#bbb');
+  if (k == 8) { // guardia municipal: gorra con escudo, parka azul con franjas reflectantes, radio al pecho, lentes
+    u(3, 0, 9, 2, hr); u(3, 2, 9, 1, '#2e4a80'); u(10, 2, 3, 1, '#000'); u(6, 0, 2, 2, '#fc3');
+    u(8, 4, 3, 1, '#111'); u(8, 5, 4, 1, '#ccc');
+    u(3, 8, 3, 1, dk(tp, 0.7)); u(10, 8, 3, 1, dk(tp, 0.7)); u(4, 11, 9, 1, '#ff7a1a'); u(4, 12, 9, 1, '#e8e8e8');
+    u(5, 9, 1, 1, '#fc3'); u(9, 8, 1, 3, '#222'); u(9, 7, 1, 1, '#222'); u(7, 15, 2, 1, '#bbb');
   }
   // brazo de adelante según el cuadro
   if (A && k == 3) u(10, 8, 3, 2, tp);
@@ -193,7 +194,7 @@ function dude(x, k, f) {
   if (k == 5) { u(9, 12, 5, 5, '#27c'); u(9, 12, 5, 1, '#fff'); if (A) u(16, 7, 1, 3, '#8df'); }
   if (k == 6) { u(9, 12, 6, 3, '#a63'); u(10, 11, 1, 1, '#f44'); u(12, 11, 1, 1, '#fd4'); u(14, 11, 1, 1, '#4c8'); }
   if (k == 7) { if (A) u(16, 9, 5, 1, '#111'); else u(11, 12, 1, 5, '#111'); }
-  if (k == 8 && !A) { u(10, 11, 3, 4, '#a63'); u(10, 11, 3, 3, '#fff'); }
+  if (k == 8 && !A) { u(10, 11, 3, 4, '#fff'); u(10, 11, 3, 1, '#d22'); u(10, 13, 3, 1, '#9ab'); }
 }
 
 function banana(x, c) {
@@ -525,7 +526,7 @@ function spawn(str) {
     e.sh = S.add.ellipse(0, 0, 56 * (d.sc || 1), 14, 0, 0.35).setDepth(1);
     e.spr = S.add.image(0, 0, 'd' + d.k + '0').setOrigin(0.46, 1).setScale((d.sc || 1) * Z);
     e.o = [e.sh, e.spr]; G.E.push(e);
-    if (ch == 'B') { ft(sx + 400, 220, '¡EL INSPECTOR JEFE!', '#f55', 34); S.cameras.main.shake(400, 0.01); }
+    if (ch == 'B') { ft(sx + 400, 220, '¡EL GUARDIA MUNICIPAL!', '#f55', 34); S.cameras.main.shake(400, 0.01); }
   });
 }
 function shot(x, y, z, vx, dmg, foe, key, pc, l) {
