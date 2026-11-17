@@ -59,20 +59,28 @@ const LK = [
   ['#e0b08a', '#421', '#e88', '#536', '#222'],
   ['#c98a5e', '#1f2a44', '#7db3e3', '#1f2a44', '#111'],
   ['#c98a5e', '#a11', '#33203a', '#33203a', '#111'],
+  ['#c98a5e', '#1f7a4a', '#eee', '#5a4632', '#222'], // 9 kioskero
+  ['#b5764a', '#111', '#7db3e3', '#1f2a44', '#111'], // 10 micrero
+  ['#e0b08a', '#111', '#fff', '#111', '#111'], // 11 guardia del súper
+  ['#c98a5e', '#d22', '#f80', '#345', '#fff'], // 12 vendedor
 ];
 const EN = {
   c: { k: 4, hp: 5, spd: 125, dmg: 6, rng: 52, say: '¡CHICLE A CIEN!' },
   a: { k: 5, hp: 6, spd: 95, dmg: 8, rng: 240, sh: 1, say: '¡AGÜITA A LUCA!' },
   d: { k: 6, hp: 10, spd: 85, dmg: 10, rng: 58, say: '¡DULCES, LLEVE!' },
   g: { k: 7, hp: 16, spd: 105, dmg: 14, rng: 62, say: '¡AQUÍ NO SE CANTA!' },
-  B: { k: 8, hp: 110, spd: 95, dmg: 18, rng: 90, sc: 1.7, say: '¡DESALOJEN!' },
+  K: { k: 9, hp: 60, spd: 90, dmg: 10, rng: 230, sc: 1.5, b: 1, nm: 'EL KIOSKERO MALA ONDA', say: '¡NO ME TAPÍ EL KIOSCO!' },
+  M: { k: 10, hp: 75, spd: 100, dmg: 14, rng: 200, sc: 1.5, b: 2, nm: 'EL MICRERO MALA ONDA', say: '¡CÓRRASE AL FONDO!' },
+  U: { k: 11, hp: 90, spd: 80, dmg: 16, rng: 80, sc: 1.9, b: 3, nm: 'GUARDIA GIGANTE DEL SÚPER', say: '¡MUESTRE LA BOLETA!' },
+  V: { k: 12, hp: 100, spd: 135, dmg: 9, rng: 250, sc: 1.5, b: 4, nm: 'EL VENDEDOR MALA ONDA', say: '¡TODO A LUCA, CASERITO!' },
+  B: { k: 8, hp: 130, spd: 95, dmg: 18, rng: 90, sc: 2, b: 5, nm: 'GUARDIA GIGANTE DEL METRO', say: '¡DESALOJEN!' },
 };
 const ST = [
-  { n: 'LA ALAMEDA', b: 'b0', f: 'f0', p: 1, a: 0, w: ['cc', 'ccac', 'cdcac'] },
-  { n: 'ARRIBA DE LA MICRO', b: 'b0', f: 'f1', a: 260, w: ['cac', 'ccda', 'dacad'] },
-  { n: 'AFUERA DEL SÚPER', b: 'b0', f: 'f2', a: 0, w: ['ddc', 'cadag', 'ddcaga'] },
-  { n: 'ESTACIÓN LOS PLÁTANOS', b: 'b4', f: 'f3', a: 0, w: ['gcc', 'gaga', 'ggdac'] },
-  { n: 'DENTRO DEL METRO', b: 'b4', f: 'f4', a: 700, w: ['ggc', 'gcaga', 'Bgga'] },
+  { n: 'LA ALAMEDA', b: 'b0', f: 'f0', p: 1, a: 0, w: ['cc', 'ccac', 'cdcac', 'K'] },
+  { n: 'ARRIBA DE LA MICRO', b: 'b0', f: 'f1', a: 260, w: ['cac', 'ccda', 'dacad', 'M'] },
+  { n: 'AFUERA DEL SÚPER', b: 'b0', f: 'f2', a: 0, w: ['ddc', 'cadag', 'ddcaga', 'U'] },
+  { n: 'ESTACIÓN LOS PLÁTANOS', b: 'b4', f: 'f3', a: 0, w: ['gcc', 'gaga', 'ggdac', 'V'] },
+  { n: 'DENTRO DEL METRO', b: 'b4', f: 'f4', a: 700, w: ['ggc', 'gcaga', 'gga', 'B'] },
 ];
 const MEL = [
   [0, , 3, 5, 7, , 7, 5, 3, , 0, 3, 5, , 3, , 7, , 10, 12, 10, , 7, 5, 7, , 5, 3, 0, , , ],
@@ -114,10 +122,17 @@ function dude(x, k, f) {
   if (k == 1) { u(4, 1, 7, 2, hr); u(3, 2, 2, 9, hr); u(6, 10, 4, 1, '#ddd'); u(7, 11, 2, 2, '#ddd'); }
   if (k == 2) { u(4, 0, 8, 3, hr); u(4, 3, 1, 3, hr); u(7, 8, 2, 7, '#fff'); u(5, 10, 1, 1, '#fd6'); u(10, 12, 1, 1, '#fd6'); u(5, 14, 1, 1, '#fd6'); if (!A) u(9, 6, 2, 1, '#111'); }
   if (k == 3) { u(2, 8, 12, 7, tp); u(2, 10, 12, 1, '#f2c500'); u(2, 12, 12, 1, '#2a8'); u(2, 14, 12, 1, '#fff'); u(4, 0, 7, 3, hr); u(4, 3, 1, 4, hr); u(6, 1, 3, 1, '#f2c500'); }
-  if (k == 4) { u(4, 1, 7, 2, hr); u(10, 2, 3, 1, hr); }
+  if (k == 4 || k == 9 || k > 10) { u(4, 1, 7, 2, hr); u(10, 2, 3, 1, hr); }
   if (k == 5) { u(4, 1, 7, 2, hr); u(3, 3, 9, 1, hr); }
   if (k == 6) { u(4, 1, 7, 2, hr); u(3, 1, 2, 3, hr); u(5, 10, 6, 6, '#fff'); }
-  if (k > 6) { u(4, 1, 7, 2, hr); u(10, 2, 3, 1, '#000'); u(4, 9, 8, 5, '#c6e00a'); u(4, 11, 8, 1, '#999'); u(4, 15, 8, 1, '#000'); }
+  if (k == 7 || k == 8) { u(4, 1, 7, 2, hr); u(10, 2, 3, 1, '#000'); u(4, 9, 8, 5, '#c6e00a'); u(4, 11, 8, 1, '#999'); u(4, 15, 8, 1, '#000'); }
+  // jefes: kioskero (delantal y bigote), micrero (corbata, panza y lentes), guardia del súper (chaleco negro), vendedor (saco al hombro)
+  if (k == 9) { u(5, 10, 6, 7, hr); u(7, 13, 2, 2, '#fbe7a1'); }
+  if (k == 10) { u(4, 1, 7, 2, hr); u(8, 9, 1, 5, '#a11'); u(11, 11, 2, 4, tp); }
+  if (k == 11) { u(4, 9, 8, 6, '#222'); u(9, 10, 2, 2, '#fd6'); u(5, 10, 1, 3, '#666'); }
+  if (k == 12) { u(0, 7, 4, 9, '#222'); u(1, 6, 1, 1, '#f4a'); u(2, 6, 1, 1, '#4cf'); u(5, 14, 6, 2, '#333'); }
+  if (k == 10 || k == 11) u(8, 4, 3, 1, '#000');
+  if (k == 9 || k == 10) u(8, 6, 3, 1, '#222');
   if (A && k == 3) u(10, 8, 3, 2, tp);
   else if (A) { u(10, 9, 5, 2, tp); u(15, 9, 1, 2, sk); }
   else { u(9, 9, 2, 5, tp); u(9, 14, 2, 1, sk); }
@@ -136,7 +151,10 @@ function dude(x, k, f) {
   if (k == 4) { u(9, 12, 6, 2, '#eee'); u(10, 11, 1, 1, '#f4a'); u(12, 11, 1, 1, '#4cf'); u(14, 11, 1, 1, '#7d4'); }
   if (k == 5) { u(9, 12, 5, 5, '#27c'); u(9, 12, 5, 1, '#fff'); if (A) u(16, 7, 1, 3, '#8df'); }
   if (k == 6) { u(9, 12, 6, 3, '#a63'); u(10, 11, 1, 1, '#f44'); u(12, 11, 1, 1, '#fd4'); u(14, 11, 1, 1, '#4c8'); }
-  if (k > 6) { if (A) u(16, 9, 5, 1, '#111'); else u(11, 12, 1, 5, '#111'); }
+  if (k == 7 || k == 8 || k == 11) { if (A) u(16, 9, 5, 1, '#111'); else u(11, 12, 1, 5, '#111'); }
+  if (k == 9) { if (A) u(16, 8, 5, 2, '#ddd'); else u(10, 11, 2, 6, '#ddd'); }
+  if (k == 10) { const a = A ? 16 : 10, b = A ? 6 : 11; u(a, b, 5, 1, '#222'); u(a, b + 4, 5, 1, '#222'); u(a, b, 1, 5, '#222'); u(a + 4, b, 1, 5, '#222'); }
+  if (k == 12) { if (A) u(16, 7, 2, 4, '#f7a'); else u(10, 11, 2, 4, '#f7a'); }
 }
 
 function banana(x, c) {
@@ -146,9 +164,11 @@ function banana(x, c) {
 }
 
 function art() {
-  for (let k = 0; k < 9; k++) for (let f = 0; f < 5; f++) tex('d' + k + f, 78, 78, (x) => dude(x, k, f), 3);
+  for (let k = 0; k < 13; k++) for (let f = 0; f < 5; f++) tex('d' + k + f, 78, 78, (x) => dude(x, k, f), 3);
   tex('nt', 18, 22, (x) => { R(x, '#fff', 11, 0, 3, 16); R(x, '#fff', 11, 0, 7, 4); x.fillStyle = '#fff'; x.beginPath(); x.arc(8, 16, 6, 0, 7); x.fill(); });
   tex('bt', 22, 10, (x) => { R(x, '#8df', 4, 1, 16, 8); R(x, '#fff', 0, 3, 4, 4); R(x, '#27c', 9, 1, 5, 8); });
+  tex('np', 24, 14, (x) => { R(x, '#eee', 0, 0, 24, 14); R(x, '#777', 3, 3, 18, 2); R(x, '#777', 3, 7, 18, 2); R(x, '#777', 3, 11, 11, 1); });
+  tex('ic', 24, 10, (x) => { R(x, '#f7a', 0, 0, 15, 10); R(x, '#fff', 0, 0, 15, 3); R(x, '#c96', 15, 4, 9, 2); });
   tex('wv', 30, 50, (x) => { x.strokeStyle = '#ffe14d'; x.lineWidth = 4; for (let i = 0; i < 3; i++) { x.beginPath(); x.arc(-8 + i * 9, 25, 20, -1, 1); x.stroke(); } });
   tex('cn', 20, 20, (x) => { x.translate(2, 0); x.fillStyle = '#b8860b'; x.beginPath(); x.arc(8, 8, 8, 0, 7); x.fill(); x.fillStyle = '#ffd24a'; x.beginPath(); x.arc(8, 8, 6, 0, 7); x.fill(); R(x, '#b8860b', 7, 4, 2, 8); }, 2);
   tex('bn', 34, 24, (x) => { x.translate(2, 0); banana(x, '#f5d400'); }, 2);
@@ -335,7 +355,7 @@ function noise(d, v) {
 function music(dt) {
   G.mt -= dt; if (G.mt > 0) return;
   const si = G.st == 'play' ? G.si : 0, m = MEL[si % 2], i = G.ms++ % 32, n = m[i];
-  G.mt += 0.17 - si * 0.012;
+  G.mt += 0.17 - si * 0.012 - (G.st == 'play' && G.bo ? 0.03 : 0);
   if (n != null) tone(440 * Math.pow(2, n / 12), 0.16, WAVE[G.P[0] ? G.P[0].h : 3], 0.035);
   if (i % 8 == 0) tone(110 * Math.pow(2, [0, 0, 3, -2][(G.ms >> 3) % 4] / 12), 0.3, 'triangle', 0.09);
   if (i % 4 == 0) tone(95, 0.12, 'sine', 0.12, 40);
@@ -419,7 +439,8 @@ function startGame() {
   G.scT = T(400, 22, '', 18, '#ffd76a').setScrollFactor(0).setDepth(960);
   G.stT = T(400, 44, '', 11, '#ccc').setScrollFactor(0).setDepth(960);
   G.go = T(700, 300, 'SIGUE >>>', 28, '#e1ff00').setScrollFactor(0).setDepth(960);
-  G.hud = [hudG, G.scT, G.stT, G.go];
+  G.bT = T(400, 102, '', 13, '#ff8a80').setScrollFactor(0).setDepth(960);
+  G.hud = [hudG, G.scT, G.stT, G.go, G.bT];
   G.sel.forEach((s, i) => s && mkP(i, s.h));
   startStage(0);
 }
@@ -468,7 +489,10 @@ function spawn(str) {
     e.sh = S.add.ellipse(0, 0, 44 * (d.sc || 1), 12, 0, 0.35).setDepth(1);
     e.spr = S.add.image(0, 0, 'd' + d.k + '0').setOrigin(0.46, 1).setScale(d.sc || 1);
     e.o = [e.sh, e.spr]; G.E.push(e);
-    if (ch == 'B') { ft(sx + 400, 220, '¡EL INSPECTOR JEFE!', '#f55', 34); S.cameras.main.shake(400, 0.01); }
+    if (d.b) {
+      ft(sx + 400, 220, '¡' + d.nm + '!', '#f55', 26); S.cameras.main.shake(400, 0.01);
+      [392, 311, 392, 311].forEach((f, i) => S.time.delayedCall(i * 170, () => tone(f, 0.16, 'sawtooth', 0.07)));
+    }
   });
 }
 function shot(x, y, z, vx, dmg, foe, key, pc, l) {
@@ -481,7 +505,8 @@ function drop(x, y, key) {
 }
 function hitE(e, dmg, dir, p) {
   if (e.dead) return;
-  e.hp -= dmg; e.stun = Math.max(e.stun, 0.35); e.kx = dir * (e.d.sc ? 90 : 240); e.wind = 0;
+  e.hp -= dmg; e.kx = dir * (e.d.sc ? 90 : 240);
+  if (!e.d.b) { e.stun = Math.max(e.stun, 0.35); e.wind = 0; }
   e.spr.setTintFill(0xffffff); S.time.delayedCall(70, () => e.spr.active && e.spr.clearTint());
   noise(0.08, 0.12); tone(180, 0.08, 'square', 0.05, 70);
   if (p) p.sp = Math.min(100, p.sp + 7);
@@ -492,7 +517,18 @@ function hitE(e, dmg, dir, p) {
     drop(e.x, e.y, 'cn'); if (e.d.hp > 8) drop(e.x + 20, e.y + 6, 'cn');
     const r = Math.random();
     if (r < 0.06 || e.d.sc) drop(e.x - 20, e.y, 'gb'); else if (r < 0.17) drop(e.x - 20, e.y, 'bn');
+    if (e.d.b) {
+      drop(e.x + 44, e.y, 'bn'); ft(e.x, e.y - 130, '¡K.O.!', '#ffe14d', 34); S.cameras.main.flash(250, 255, 240, 180);
+      G.E.forEach((o) => hitE(o, 99, dir));
+    }
   }
+}
+// golpe al suelo de los guardias gigantes: se esquiva saltando
+function slam(e) {
+  S.cameras.main.shake(300, 0.016); noise(0.3, 0.2); tone(70, 0.4, 'sine', 0.15, 30);
+  const r = S.add.ellipse(e.x, e.y, 80, 26).setStrokeStyle(5, 0xffe14d).setDepth(2);
+  S.tweens.add({ targets: r, scale: 5, alpha: 0, duration: 380, onComplete: () => r.destroy() });
+  G.P.forEach((p) => !p.dead && p.z < 16 && Math.abs(p.x - e.x) < 200 && Math.abs(p.y - e.y) < 70 && hurtP(p, e.d.dmg, p.x > e.x ? 1 : -1));
 }
 function hurtP(p, dmg, dir) {
   if (p.inv > 0 || p.dead) return;
@@ -568,25 +604,43 @@ function upE(e, dt) {
     }
   });
   if (e.dead) return;
-  const al = G.P.filter((p) => !p.dead);
-  if (e.stun > 0) fr = 4;
-  else if (al.length) {
+  const al = G.P.filter((p) => !p.dead), b = d.b, cx = S.cameras.main.scrollX + 400;
+  // a media vida el jefe se enoja: más rápido y ataca más seguido
+  if (b && !e.r && e.hp < d.hp / 2) {
+    e.r = 1; ft(e.x, e.y - 100 * d.sc, '¡SE ENOJÓ!', '#f55', 22); tone(140, 0.5, 'sawtooth', 0.08, 60);
+    if (b == 5) spawn('gg');
+  }
+  if (e.stun > 0) { fr = 4; e.ch = 0; }
+  else if (e.ch > 0) {
+    // embestida
+    e.ch -= dt; e.x += e.f * 560 * dt; fr = 3; tint = 1;
+    al.forEach((p) => Math.abs(p.x - e.x) < 46 && Math.abs(p.y - e.y) < 30 && p.z < 34 && hurtP(p, d.dmg, e.f));
+    if ((e.x - cx) * e.f > 360) e.ch = 0;
+  } else if (al.length) {
     const t = al.reduce((a, p) => (Math.abs(p.x - e.x) < Math.abs(a.x - e.x) ? p : a));
     const dx = t.x - e.x, dy = t.y - e.y;
     if (e.wind > 0) {
       e.wind -= dt; tint = 1; fr = e.wind < 0.14 ? 3 : 0;
       if (e.wind <= 0) {
-        e.cool = 1 + Math.random() * 1.2;
-        if (d.sh) { shot(e.x + e.f * 30, e.y, 40, e.f * 300, d.dmg, 1, 'bt', 0, 2.4); tone(500, 0.1, 'sine', 0.05, 250); }
+        e.cool = e.r ? 0.5 + Math.random() * 0.5 : 1 + Math.random() * 1.2; e.n = -~e.n;
+        if (b == 1) for (let i = -1; i < 2; i++) shot(e.x + e.f * 40, e.y + i * 36, 50, e.f * (e.r ? 400 : 300), d.dmg, 1, 'np', 0, 2.4);
+        else if (b == 2 || (b == 5 && e.n % 2)) { e.ch = e.r ? 1 : 0.75; tone(311, 0.4, 'sawtooth', 0.07); tone(370, 0.4, 'sawtooth', 0.07); }
+        else if (b == 3 || b == 5) slam(e);
+        else if (b == 4) {
+          for (let i = 0; i < (e.r ? 5 : 3); i++) S.time.delayedCall(i * 150, () => G.E.includes(e) && shot(e.x + e.f * 40, e.y, 50, e.f * 340, d.dmg, 1, 'ic', 0, 2.4));
+          if (e.n % 3 == 0 && G.E.length < 4) { spawn('c'); ft(e.x, e.y - 150, '¡CABROS, AYUDA!', '#fff', 14); }
+        }
+        else if (d.sh) { shot(e.x + e.f * 30, e.y, 40, e.f * 300, d.dmg, 1, 'bt', 0, 2.4); tone(500, 0.1, 'sine', 0.05, 250); }
         else if (Math.abs(dx) < d.rng + 26 && Math.abs(dy) < 28 && t.z < 34) hurtP(t, d.dmg, e.f);
       }
     } else {
       e.f = dx > 0 ? 1 : -1; e.cool -= dt;
       const sx = S.cameras.main.scrollX, gx = Phaser.Math.Clamp(t.x - e.f * (d.rng - 12), sx + 40, sx + 760), gy = t.y + (d.sh ? 0 : e.oy), ax = gx - e.x, ay = gy - e.y, m = Math.hypot(ax, ay);
-      if (m > 12) { e.x += (ax / m) * d.spd * dt; e.y += (ay / m) * d.spd * 0.7 * dt; fr = 1 + ((now / 150 | 0) % 2); }
+      const v = d.spd * (e.r ? 1.35 : 1) * dt;
+      if (m > 12) { e.x += (ax / m) * v; e.y += (ay / m) * v * 0.7; fr = 1 + ((now / 150 | 0) % 2); }
       if (Math.abs(ax) < 30 && Math.abs(dy) < 22 && e.cool <= 0 && onScr(e)) {
         // un solo grito a la vez, para que los globos no se pisen
-        e.wind = 0.42; if (now > (G.say || 0) && Math.random() < 0.5) { G.say = now + 1400; ft(e.x, e.y - 96 * (d.sc || 1), d.say, '#fff', 13); }
+        e.wind = b ? 0.6 : 0.42; if (now > (G.say || 0) && Math.random() < 0.5) { G.say = now + 1400; ft(e.x, e.y - 96 * (d.sc || 1), d.say, '#fff', 13); }
       }
     }
   }
@@ -650,6 +704,9 @@ function upPlay(dt) {
     hudG.fillStyle(p.sp >= 100 && S.time.now % 300 < 150 ? 0xffffff : 0x33c8ff).fillRect(a, 42, p.sp * 2, 8);
     for (let i = 0; i < p.lv; i++) hudG.fillStyle(0xf5d400).fillRect(a + i * 14, 56, 10, 6);
   });
+  const bo = G.bo = G.E.find((e) => e.d.b);
+  G.bT.setText(bo ? bo.d.nm : '');
+  if (bo) hudG.fillStyle(0, 0.7).fillRect(198, 78, 404, 14).fillStyle(0xff3b30).fillRect(200, 80, 400 * bo.hp / bo.d.hp, 10);
   G.scT.setText('PROPINAS $' + G.score);
   if (G.P.every((p) => p.dead && p.lv <= 0)) end(0);
 }
