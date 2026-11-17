@@ -80,7 +80,7 @@ const MEL = [
 ];
 const WAVE = ['square', 'sawtooth', 'triangle', 'sine'];
 
-let S, bgB, bgF, bgP, bus, hudG, noiseBuf, warm;
+let S, bgB, bgF, bgP, bus, hudG, noiseBuf;
 const G = { st: '', ui: [], hud: [], P: [], E: [], S: [], I: [], hs: [], score: 0, mt: 0, ms: 0, au: 0 };
 
 // ---------- Arte procedural ----------
@@ -173,49 +173,59 @@ function art() {
 
   // fondo: atardecer, cordillera y skyline
   tex('b0', W, H, (x) => {
-    // cielo de atardecer en bandas: morado arriba, naranjo y amarillo abajo
-    const g = x.createLinearGradient(0, 0, 0, 330);
-    [['#2a0f45', 0], ['#7a1f5c', 0.3], ['#d8432f', 0.6], ['#ff9a2e', 0.82], ['#ffe07a', 1]].forEach(([c, s]) => g.addColorStop(s, c));
+    // cielo de tarde santiaguina: azul arriba, rosado y dorado en el horizonte
+    const g = x.createLinearGradient(0, 0, 0, 300);
+    [['#2f5fb8', 0], ['#6fa0e0', 0.5], ['#f4b8b0', 0.85], ['#ffd8a0', 1]].forEach(([c, s]) => g.addColorStop(s, c));
     R(x, g, 0, 0, W, H);
-    // sol grande con franjas
-    x.fillStyle = '#fff2a8'; x.beginPath(); x.arc(400, 250, 130, 0, 7); x.fill();
-    x.fillStyle = '#ffd04a'; x.beginPath(); x.arc(400, 250, 112, 0, 7); x.fill();
-    for (let i = 0; i < 7; i++) R(x, g, 260, 214 + i * 16, 280, 2 + i);
-    // nubes alargadas
-    for (let i = 0; i < 9; i++) {
-      const a = (i * 173) % 760, b = 40 + (i * 37) % 150, w = 90 + (i * 41) % 120;
-      R(x, i % 2 ? '#5a1650' : '#93305e', a, b, w, 7); R(x, '#ff8a5c', a + 10, b + 7, w - 30, 3);
-    }
-    for (let i = 0; i < 6; i++) { x.strokeStyle = '#2a0f30'; x.lineWidth = 2; const a = 120 + i * 97, b = 70 + (i * 29) % 60; x.beginPath(); x.moveTo(a, b); x.lineTo(a + 6, b + 4); x.lineTo(a + 12, b); x.stroke(); }
-    // cordillera: lejana y cercana, nieve rosada por el sol
+    x.fillStyle = '#fff1c0'; x.beginPath(); x.arc(700, 236, 26, 0, 7); x.fill();
+    for (let i = 0; i < 7; i++) { const a = (i * 151) % 740, b = 30 + (i * 43) % 120, w = 70 + (i * 37) % 90; R(x, '#fff', a, b, w, 12); R(x, '#fff', a + 14, b - 8, w - 34, 10); R(x, '#dfe8f8', a + 6, b + 10, w - 12, 4); }
+    // cordillera de los Andes nevada
     const pk = [[0, 300], [80, 170], [170, 235], [260, 140], [380, 245], [470, 160], [600, 250], [700, 180], [800, 300]];
-    x.fillStyle = '#8a3466'; x.beginPath(); pk.forEach((p) => x.lineTo(p[0] + 40, p[1] + 20)); x.lineTo(840, 400); x.lineTo(0, 400); x.fill();
-    x.fillStyle = '#4a1a4c'; x.beginPath(); pk.forEach((p) => x.lineTo(p[0], p[1] + 40)); x.lineTo(800, 400); x.lineTo(0, 400); x.fill();
-    x.fillStyle = '#ffb59a';
-    [1, 3, 5, 7].forEach((i) => { const p = pk[i]; x.beginPath(); x.moveTo(p[0], p[1] + 40); x.lineTo(p[0] - 20, p[1] + 66); x.lineTo(p[0] + 20, p[1] + 66); x.fill(); });
-    // edificios en contraluz
-    for (let i = 0; i < 16; i++) {
-      const h = 60 + (i * 53) % 90, a = i * 50;
-      R(x, i % 2 ? '#2a0e2e' : '#38143a', a, 330 - h, 48, h + 80);
-      for (let j = 0; j < h - 10; j += 14) for (let m = 0; m < 3; m++) if ((i + j + m) % 3 == 0) R(x, '#ffc94a', a + 6 + m * 13, 336 - h + j, 7, 7);
+    x.fillStyle = '#9aa8d0'; x.beginPath(); pk.forEach((p) => x.lineTo(p[0] + 40, p[1] + 10)); x.lineTo(840, 400); x.lineTo(0, 400); x.fill();
+    x.fillStyle = '#6a7bb0'; x.beginPath(); pk.forEach((p) => x.lineTo(p[0], p[1] + 30)); x.lineTo(800, 400); x.lineTo(0, 400); x.fill();
+    x.fillStyle = '#fff';
+    [1, 3, 5, 7].forEach((i) => { const p = pk[i]; x.beginPath(); x.moveTo(p[0], p[1] + 30); x.lineTo(p[0] - 30, p[1] + 66); x.lineTo(p[0] - 10, p[1] + 58); x.lineTo(p[0] + 6, p[1] + 68); x.lineTo(p[0] + 30, p[1] + 64); x.fill(); });
+    // cerro San Cristóbal con la Virgen
+    x.fillStyle = '#3f7a45'; x.beginPath(); x.ellipse(110, 310, 170, 150, 0, 0, 7); x.fill();
+    x.fillStyle = '#56994f'; x.beginPath(); x.ellipse(90, 320, 120, 120, 0, 0, 7); x.fill();
+    R(x, '#ccc', 102, 156, 16, 8); R(x, '#fff', 106, 124, 8, 32); R(x, '#fff', 105, 116, 10, 9); R(x, '#fff', 98, 132, 24, 4);
+    // edificios de colores
+    const bc = ['#d9c7a5', '#a9b4c2', '#c98d6a', '#e8e2d0', '#8a97a8'];
+    for (let i = 4; i < 16; i++) {
+      if (i > 3 && i < 8) continue;
+      const h = 50 + (i * 53) % 80, a = i * 50;
+      R(x, bc[i % 5], a, 300 - h, 48, h); R(x, '#0002', a + 40, 300 - h, 8, h);
+      for (let j = 8; j < h - 6; j += 14) for (let m = 0; m < 3; m++) R(x, (i + j + m) % 4 ? '#3d5a80' : '#ffe39a', a + 6 + m * 12, 300 - h + j, 7, 7);
     }
-    R(x, '#1e0a22', 388, 110, 14, 220); R(x, '#1e0a22', 376, 130, 38, 40); R(x, '#1e0a22', 393, 70, 4, 40); R(x, '#f33', 393, 66, 4, 4);
-    x.fillStyle = '#1e0a22'; x.beginPath(); x.moveTo(606, 330); x.lineTo(622, 50); x.lineTo(650, 50); x.lineTo(666, 330); x.fill();
-    R(x, '#ff9a2e', 624, 60, 3, 270);
+    // Torre Entel
+    R(x, '#c8ccd4', 388, 110, 14, 190); R(x, '#8a919c', 378, 132, 34, 34); R(x, '#aab0ba', 381, 136, 28, 8);
+    for (let j = 0; j < 5; j++) R(x, j % 2 ? '#fff' : '#e33', 393, 70 + j * 8, 4, 8);
+    // Costanera Center
+    x.fillStyle = '#4f80c0'; x.beginPath(); x.moveTo(606, 300); x.lineTo(620, 54); x.lineTo(652, 54); x.lineTo(666, 300); x.fill();
+    R(x, '#a8cdf0', 628, 60, 6, 240); R(x, '#36639e', 646, 60, 4, 240);
+    for (let j = 0; j < 4; j++) R(x, '#36639e', 618 + j * 10, 40, 3, 16);
+    // La Moneda con la bandera
+    R(x, '#f2ede0', 210, 256, 150, 44); R(x, '#d8d0bc', 206, 250, 158, 8); R(x, '#d8d0bc', 262, 240, 46, 12);
+    for (let i = 0; i < 12; i++) R(x, '#bfb5a0', 216 + i * 12, 264, 4, 30);
+    R(x, '#7a5a3a', 275, 278, 20, 22); R(x, '#888', 284, 206, 2, 36);
+    R(x, '#fff', 286, 206, 30, 9); R(x, '#d52b1e', 286, 215, 30, 9); R(x, '#0039a6', 286, 206, 10, 9); R(x, '#fff', 290, 209, 3, 3);
   });
   // calle
   tex('f0', W, H, (x) => {
-    R(x, '#4a3440', 0, 300, W, 95); R(x, '#ff9a2e', 0, 300, W, 2);
-    for (let i = 0; i < 8; i++) R(x, '#f3d9b0', i * 100 + 20, 345, 50, 4);
+    R(x, '#4b4b52', 0, 300, W, 95);
+    for (let i = 0; i < 8; i++) R(x, '#eee', i * 100 + 20, 345, 50, 4);
     txt(x, 'SOLO BUS', 400, 384, 16, '#f2c500');
-    R(x, '#e0b48a', 0, 392, W, 8); R(x, '#b08068', 0, 400, W, 200);
-    for (let i = 0; i < W; i += 50) R(x, '#98685a', i, 400, 2, 200);
-    for (let j = 440; j < H; j += 50) R(x, '#98685a', 0, j, W, 2);
+    R(x, '#c4c4cc', 0, 392, W, 8); R(x, '#9a9aa4', 0, 400, W, 200);
+    for (let i = 0; i < W; i += 50) R(x, '#878792', i, 400, 2, 200);
+    for (let j = 440; j < H; j += 50) R(x, '#878792', 0, j, W, 2);
   });
   tex('p0', W, H, (x) => {
     R(x, '#555', 70, 285, 190, 10); R(x, '#777', 80, 295, 6, 105); R(x, '#777', 244, 295, 6, 105);
     R(x, 'rgba(160,210,255,.35)', 90, 300, 150, 70); R(x, '#c33', 100, 372, 130, 8);
     R(x, '#777', 275, 270, 5, 130); R(x, '#1d6fd6', 258, 244, 40, 28); txt(x, 'BUS', 278, 263, 14);
+    R(x, '#d22', 326, 346, 78, 34); R(x, '#eee', 330, 340, 70, 6); for (let i = 0; i < 6; i++) R(x, i % 2 ? '#fd3' : '#d22', 322 + i * 14, 318, 14, 10);
+    R(x, '#999', 324, 328, 3, 18); R(x, '#999', 400, 328, 3, 18); txt(x, 'SOPAIPILLAS', 365, 368, 10);
+    x.fillStyle = '#222'; [338, 392].forEach((a) => { x.beginPath(); x.arc(a, 386, 9, 0, 7); x.fill(); });
     R(x, '#444', 420, 170, 6, 230); R(x, '#444', 420, 170, 44, 5); R(x, '#ffe9a0', 452, 175, 16, 6);
     R(x, '#145c36', 510, 280, 150, 14); R(x, '#1f7a4a', 520, 294, 130, 106); R(x, '#fbe7a1', 530, 320, 110, 44);
     txt(x, 'KIOSCO', 585, 312, 14);
@@ -358,9 +368,7 @@ function ft(x, y, s, c, z) {
 const onScr = (e) => Math.abs(e.x - S.cameras.main.scrollX - 400) < 430;
 function setBg(i) {
   const s = ST[i];
-  bgB.setTexture(s.b); bgF.setTexture(s.f); bgP.setVisible(!!s.p); bus.setVisible(!!s.p);
-  warm.setFillStyle(s.b == 'b0' ? 0xffb070 : 0xffd8b0);
-}
+  bgB.setTexture(s.b); bgF.setTexture(s.f); bgP.setVisible(!!s.p); bus.setVisible(!!s.p);}
 
 // ---------- Pantallas ----------
 function toTitle() {
@@ -660,9 +668,7 @@ function create() {
   bgF = S.add.tileSprite(0, 0, W, H, 'f0').setOrigin(0).setScrollFactor(0).setDepth(-20);
   bus = S.add.image(-300, 394, 'bus0').setOrigin(0.5, 1).setDepth(-15); bus.v = 200;
   bgP = S.add.tileSprite(0, 0, W, H, 'p0').setOrigin(0).setScrollFactor(0).setDepth(-10);
-  // luz cálida de atardecer sobre la escena (debajo del HUD y los menús) + viñeta
-  warm = S.add.rectangle(400, 300, W, H, 0xffb070).setScrollFactor(0).setDepth(899).setBlendMode(Phaser.BlendModes.MULTIPLY);
-  const cam = S.cameras.main; if (cam.postFX) cam.postFX.addVignette(0.5, 0.5, 0.95, 0.3);
+  const cam = S.cameras.main; if (cam.postFX) cam.postFX.addVignette(0.5, 0.5, 1, 0.15);
   getStorage().get('tocata-hs').then((r) => {
     if (r.found && Array.isArray(r.value)) G.hs = r.value.filter((n) => typeof n == 'number').slice(0, 5);
     if (G.st == 'title') toTitle();
