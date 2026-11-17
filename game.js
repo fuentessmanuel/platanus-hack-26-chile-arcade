@@ -87,9 +87,14 @@ const MEL = [
   [7, 7, 10, 7, 12, , 10, 7, 5, 5, 7, 5, 3, , 0, , 7, 7, 10, 7, 12, , 15, 12, 10, , 7, 5, 7, , , ],
 ];
 const WAVE = ['square', 'sawtooth', 'triangle', 'sine'];
+// celebración al pasar etapa: lo que canta cada héroe, su tono de voz y la gente que da propinas
+const LY = ['♪ ¡YO YO, SANTIAGO! ♪', '♪ ¡YEAAAAAH! ♪', '♪ ¡AY, AMOOOR! ♪', '♪ ¡LA LA LAY! ♪'];
+const VB = [196, 147, 220, 262], SONG = [0, 4, 7, 9, 7, 4, 7, 12];
+const CHEER = ['¡BRAVO!', '¡OTRA!', '¡BUENA!', '¡ESOOO!', '¡TOMA!'];
+const PUB = [['#c98a5e', '#421', '#3a7'], ['#e0b08a', '#da3', '#e55'], ['#b5764a', '#111', '#58c'], ['#c98a5e', '#888', '#c7a']];
 
 let S, bgB, bgF, bgP, bus, hudG, noiseBuf;
-const G = { st: '', ui: [], hud: [], P: [], E: [], S: [], I: [], hs: [], score: 0, mt: 0, ms: 0, au: 0 };
+const G = { st: '', ui: [], hud: [], P: [], E: [], S: [], I: [], C: [], hs: [], score: 0, mt: 0, ms: 0, au: 0 };
 
 // ---------- Arte procedural ----------
 const R = (x, c, a, b, w, h) => { x.fillStyle = c; x.fillRect(a, b, w, h); };
@@ -215,6 +220,14 @@ function dude(x, k, f) {
   if (k == 12) { if (A) u(16, 7, 2, 4, '#f7a'); else u(10, 11, 2, 4, '#f7a'); }
 }
 
+function pub(x, c, f) {
+  const q = (a, b, w, h, k) => R(x, k, a * 3, b * 3, w * 3, h * 3);
+  q(4, 8, 8, 8, c[2]); q(4, 16, 3, 7, '#334'); q(9, 16, 3, 7, '#334'); q(3, 23, 4, 2, '#111'); q(9, 23, 4, 2, '#111');
+  q(5, 2, 6, 6, c[0]); q(4, 1, 8, 2, c[1]); q(9, 4, 1, 1, '#111'); q(8, 6, 2, f ? 2 : 1, '#822');
+  q(2, 9, 2, 6, c[2]);
+  if (f) { q(11, 3, 2, 6, c[2]); q(11, 1, 2, 2, c[0]); } else { q(11, 9, 2, 6, c[2]); q(11, 15, 2, 1, c[0]); }
+}
+
 function banana(x, c) {
   x.lineCap = 'round'; x.strokeStyle = '#6b4a12'; x.lineWidth = 9;
   x.beginPath(); x.arc(14, 0, 15, 0.5, 2.6); x.stroke();
@@ -231,6 +244,8 @@ function art() {
   tex('cn', 20, 20, (x) => { x.translate(2, 0); x.fillStyle = '#b8860b'; x.beginPath(); x.arc(8, 8, 8, 0, 7); x.fill(); x.fillStyle = '#ffd24a'; x.beginPath(); x.arc(8, 8, 6, 0, 7); x.fill(); R(x, '#b8860b', 7, 4, 2, 8); }, 2);
   tex('bn', 34, 24, (x) => { x.translate(2, 0); banana(x, '#f5d400'); }, 2);
   tex('gb', 34, 24, (x) => { x.translate(2, 0); banana(x, '#fff7b0'); }, 2);
+  tex('bl', 26, 14, (x) => { R(x, '#2e7d32', 0, 0, 26, 14); R(x, '#8fd18b', 2, 2, 22, 10); txt(x, '$', 13, 11, 10, '#1b5e20'); });
+  PUB.forEach((c, i) => { for (let f = 0; f < 2; f++) tex('q' + i + f, 48, 75, (x) => pub(x, c, f)); });
   tex('pl', 26, 12, (x) => { R(x, '#f5d400', 2, 6, 22, 4); R(x, '#f5d400', 10, 0, 5, 8); R(x, '#c9a800', 0, 9, 8, 3); R(x, '#c9a800', 18, 9, 8, 3); });
 
   // micros
@@ -410,8 +425,86 @@ function noise(d, v) {
   s.buffer = noiseBuf; g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + d);
   s.connect(g); g.connect(c.destination); s.start(t); s.stop(t + d);
 }
+function voice(f, d, v, h) {
+  const c = S.sound.context; if (!c || c.state != 'running') return;
+  if (!c.gw) {
+    const r = new Float32Array(48), m = new Float32Array(48); for (let n = 1; n < 48; n++) m[n] = n ** -0.6; c.gw = c.createPeriodicWave(r, m);
+    c.nb = c.createBuffer(1, c.sampleRate, c.sampleRate); const a = c.nb.getChannelData(0); for (let i = 0; i < a.length; i++) a[i] = Math.random() * 2 - 1;
+  }
+  const t = c.currentTime, e = t + d, V = [[500, 850, 2500], [450, 1950, 2600]][h] || [750, 1200, 2600], L = [330, 1000, 2700];
+  const o = c.createOscillator(), l = c.createOscillator(), lg = c.createGain(), s = c.createBufferSource(), sg = c.createGain(), g = c.createGain(), a = v * 0.17;
+  o.setPeriodicWave(c.gw); o.frequency.setValueAtTime(f * 0.88, t); o.frequency.exponentialRampToValueAtTime(f, t + 0.08);
+  l.frequency.value = 5.4; lg.gain.setValueAtTime(0, t + 0.12); lg.gain.linearRampToValueAtTime(f * (d > 0.5 ? 0.045 : 0.02), t + Math.min(d, 0.5));
+  l.connect(lg); lg.connect(o.frequency); s.buffer = c.nb; sg.gain.value = 0.03; s.connect(sg);
+  let p = g;
+  V.forEach((F, i) => { const b = c.createBiquadFilter(); b.type = 'peaking'; b.Q.value = [8, 13, 16][i]; b.gain.value = [30, 26, 24][i];
+    b.frequency.setValueAtTime(L[i], t); b.frequency.linearRampToValueAtTime(F, t + 0.07); b.connect(p); p = b; });
+  o.connect(p); sg.connect(p);
+  g.gain.setValueAtTime(0.001, t); g.gain.linearRampToValueAtTime(a * 0.4, t + 0.03); g.gain.linearRampToValueAtTime(a, t + 0.1);
+  g.gain.setValueAtTime(a, e - Math.min(0.12, d * 0.4)); g.gain.exponentialRampToValueAtTime(0.001, e);
+  g.connect(c.destination); [o, l, s].forEach((x) => { x.start(t); x.stop(e); });
+}
+function band(h) {
+  const c = S.sound.context; if (!c || c.state != 'running') return;
+  if (!c.bn) {
+    c.bn = c.createBuffer(1, c.sampleRate, c.sampleRate); const a = c.bn.getChannelData(0); for (let i = 0; i < a.length; i++) a[i] = Math.random() * 2 - 1;
+    c.ws = new Float32Array(256); for (let i = 0; i < 256; i++) c.ws[i] = Math.tanh((i / 128 - 1) * 6);
+  }
+  const t0 = c.currentTime + 0.25, P = 0.3, r = VB[h] / 2, F = (s) => r * 2 ** (s / 12), R = [0, 0, 5, 5, 0, 0, 7, 0], M = c.createGain();
+  M.gain.value = [0.046, 0.038, 0.067, 0.078][h]; M.connect(c.destination);
+  // oscilador: t inicio, f, d, tipo, v, filtro q->q2 (paso bajo), glissando sl, destino D, vibrato vb, ataque at
+  const O = (t, f, d, y, v, q, q2, sl, D, vb, at) => {
+    const o = c.createOscillator(), g = c.createGain(), b = c.createBiquadFilter(); o.type = y; o.frequency.setValueAtTime(f, t); o.detune.value = Math.random() * 14 - 7;
+    if (sl) o.frequency.exponentialRampToValueAtTime(sl, t + d);
+    b.frequency.setValueAtTime(q || 2e4, t); if (q2) b.frequency.exponentialRampToValueAtTime(q2, t + 0.08);
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(v, t + Math.abs(at || 0.005)); if (at < 0) g.gain.setValueAtTime(v, t + d - 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    if (vb) { const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = 5.8; lg.gain.value = f * vb; l.connect(lg); lg.connect(o.frequency); l.start(t); l.stop(t + d); }
+    o.connect(b); b.connect(g); g.connect(D || M); o.start(t); o.stop(t + d);
+  };
+  const N = (t, d, v, q, y) => {
+    const s = c.createBufferSource(), b = c.createBiquadFilter(), g = c.createGain(); s.buffer = c.bn; b.type = y || 'highpass'; b.frequency.value = q;
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d); s.connect(b); b.connect(g); g.connect(M); s.start(t, Math.random() * 0.5); s.stop(t + d);
+  };
+  const K = (t, v, d, f) => O(t, f || 150, d || 0.25, 'sine', v, 0, 0, (f || 150) * 0.3);
+  // rasgueo: acorde en s, notas n, escalonado 9 ms, pluck con filtro que cae
+  const St = (t, s, v, o, d, up) => [0, 7, 12, 16, 19].forEach((n, k) => O(t + (up ? 4 - k : k) * 0.009, F(s + n + o), d, 'sawtooth', v, 5000, 900));
+  let W;
+  if (h == 1) {
+    W = c.createGain(); W.gain.value = 12; const w = c.createWaveShaper(), b = c.createBiquadFilter(), hp = c.createBiquadFilter(), g = c.createGain(); w.curve = c.ws;
+    b.frequency.value = 4500; hp.type = 'highpass'; hp.frequency.value = 150; g.gain.value = 0.4; W.connect(w); w.connect(hp); hp.connect(b); b.connect(g); g.connect(M);
+  }
+  for (let i = 0; i < 8; i++) {
+    const T = t0 + i * P, s = R[i];
+    if (h == 0) {
+      if (i % 4 == 0 || i == 3 || i == 5) { K(T, 0.9, 0.5); O(T, F(s - 12), i == 7 ? 0.9 : 0.45, 'sine', 0.5); }
+      if (i % 4 == 2) { N(T, 0.18, 0.45, 1200, 'bandpass'); N(T + 0.012, 0.12, 0.3, 1500, 'bandpass'); }
+      for (let k = 0; k < (i % 4 == 3 ? 4 : 2); k++) N(T + k * P / (i % 4 == 3 ? 4 : 2), 0.04, 0.12, 7000);
+      if (i % 2 == 0) [0, 4, 7, 11].forEach((n) => O(T, F(s + n + 12), 0.5, 'sawtooth', 0.05, 2500, 400));
+    } else if (h == 1) {
+      for (let k = 0; k < 4; k++) K(T + k * 0.075, 0.35, 0.08, 110);
+      const op = i % 4 == 0 || i == 7;
+      for (let k = 0; k < (op ? 1 : 2); k++) [0, 7, 12, 0.1].forEach((n) => O(T + k * 0.15, F(s + n), op ? (i == 7 ? 1 : P) : 0.15, 'sawtooth', 0.3, op ? 0 : 1500, 0, 0, W, 0, -0.004));
+      if (i % 2) { N(T, 0.2, 0.5, 1800, 'bandpass'); K(T, 0.3, 0.1, 200); }
+      if (i == 0 || i == 4 || i == 7) N(T, 1.2, 0.18, 5000);
+    } else if (h == 2) {
+      O(T, F(s + (i % 2 ? 7 : 0) - 12), 0.28, 'triangle', 0.8, 800, 300);
+      St(T + 0.15, s, 0.035, 0, 0.12);
+      if (i % 2 == 0) [4, 7, 12].forEach((n) => O(T, F(s + n + 12), 0.6, 'sawtooth', 0.16, 3000, 0, 0, 0, 0.012, 0.15));
+      const Tp = (t, n, d) => [n, n - (n % 12 == 4 ? 4 : n % 12 == 7 ? 3 : 5)].forEach((m) => O(t, F(s + m + 12), d, 'sawtooth', 0.15, 700, 3800, 0, 0, d > 0.2 ? 0.01 : 0, -0.02));
+      if (i == 1 || i == 3 || i == 5) [[16, 0.12, 0.07], [19, 0.19, 0.07], [24, 0.26, 0.2]].forEach(([n, d, l]) => Tp(T + d, n, l));
+      if (i == 7) { [0, 0.1, 0.2].forEach((d) => Tp(T + d, 19, 0.08)); Tp(T + 0.3, 24, 0.8); Tp(T + 0.3, 16, 0.8); }
+    } else {
+      K(T, 0.6, 0.35, 95); N(T, 0.12, 0.5, 250, 'lowpass');
+      [0.15, 0.225].forEach((d) => { N(T + d, 0.05, 0.5, 900, 'bandpass'); N(T + d, 0.1, 0.25, 250, 'lowpass'); });
+      for (let k = 0; k < 4; k++) St(T + k * 0.075, s, k ? 0.06 : 0.09, 12, 0.1, k % 2);
+      const f = VB[h] * 2 ** ((SONG[i] + (SONG[i] % 12 > 6 ? 3 : 4)) / 12) * 2;
+      O(T + 0.01, f, i == 7 ? 0.9 : P, 'sine', 0.6, 0, 0, 0, 0, 0.008, -0.05); N(T + 0.01, 0.08, 0.35, f * 2, 'bandpass'); N(T + 0.01, i == 7 ? 0.9 : P, 0.25, f, 'bandpass');
+    }
+  }
+}
 function music(dt) {
   G.mt -= dt; if (G.mt > 0) return;
+  if (G.st == 'play' && G.ph == 'clear') { G.mt = 0.1; return; } // calla el fondo: suena la banda del héroe
   const si = G.st == 'play' ? G.si : 0, m = MEL[si % 2], i = G.ms++ % 32, n = m[i];
   G.mt += 0.17 - si * 0.012 - (G.st == 'play' && G.bo ? 0.03 : 0);
   if (n != null) tone(440 * Math.pow(2, n / 12), 0.16, WAVE[G.P[0] ? G.P[0].h : 3], 0.035);
@@ -505,8 +598,8 @@ function startGame() {
 function startStage(i) {
   G.si = i; setBg(i);
   const cam = S.cameras.main; cam.scrollX = 0; cam.fadeIn(400);
-  [G.E, G.S, G.I].forEach((l) => l.forEach((o) => o.o.forEach((d) => d.destroy())));
-  G.E = []; G.S = []; G.I = [];
+  [G.E, G.S, G.I, G.C].forEach((l) => l.forEach((o) => o.o.forEach((d) => d.destroy())));
+  G.E = []; G.S = []; G.I = []; G.C = [];
   G.P.forEach((p, j) => { p.x = 110 + j * 50; p.y = 470 + j * 50; });
   G.wi = 0; G.camMax = 220; G.ph = 'walk'; G.au = 0;
   G.stT.setText('ETAPA ' + (i + 1) + ' · ' + ST[i].n);
@@ -515,9 +608,9 @@ function startStage(i) {
 }
 function end(win) {
   G.st = 'end'; G.t = 1.2;
-  [G.P, G.E, G.S, G.I].forEach((l) => l.forEach((o) => o.o.forEach((d) => d.destroy())));
+  [G.P, G.E, G.S, G.I, G.C].forEach((l) => l.forEach((o) => o.o.forEach((d) => d.destroy())));
   G.hud.forEach((o) => o.destroy());
-  G.P = []; G.E = []; G.S = []; G.I = []; S.cameras.main.scrollX = 0;
+  G.P = []; G.E = []; G.S = []; G.I = []; G.C = []; S.cameras.main.scrollX = 0;
   G.hs.push(G.score); G.hs.sort((a, b) => b - a); G.hs = G.hs.slice(0, 5);
   getStorage().set('tocata-hs', G.hs);
   wood();
@@ -726,10 +819,57 @@ function upS(s, dt) {
   if (s.l <= 0) s.gone = 1;
 }
 
+// ---------- Celebración: cantan y el público da propinas ----------
+function fiesta() {
+  const sx = S.cameras.main.scrollX, al = G.P.filter((p) => !p.dead);
+  if (al.length) band(al[0].h);
+  al.forEach((p, j) => {
+    const t = T(p.x, p.y - 150, LY[p.h], 16, HERO[p.h].c).setDepth(980);
+    S.tweens.add({ targets: t, y: t.y - 30, alpha: 0, delay: 2200, duration: 700, onComplete: () => t.destroy() });
+    SONG.forEach((n, i) => S.time.delayedCall(250 + i * 300, () => voice(VB[p.h] * Math.pow(2, (n + j * 4) / 12), i == 7 ? 0.8 : 0.3, 0.13, p.h)));
+  });
+  for (let j = 0; j < 6; j++) {
+    const L = j % 2, spr = S.add.image(sx + (L ? -40 : 840), 420 + (j % 3) * 9, 'q' + (j % 4) + '0').setOrigin(0.5, 1).setScale(Z).setFlipX(!L);
+    G.C.push({ spr, o: [spr], tx: sx + (L ? 70 + j * 35 : 730 - j * 35), cd: 0.6 + Math.random() * 0.6, k: j % 4 });
+  }
+}
+function sing(p) {
+  const now = S.time.now;
+  p.spr.setTexture('d' + p.h + ((now / 260 | 0) % 2 ? 3 : 0)).setPosition(p.x, p.y - Math.abs(Math.sin(now / 130)) * 6)
+    .setFlipX(p.x > S.cameras.main.scrollX + 400).setDepth(p.y).setAlpha(1);
+  p.sh.setPosition(p.x, p.y); p.tag.setPosition(p.x, p.y - 112);
+  if (Math.random() < 0.06) {
+    const n = S.add.image(p.x + Math.random() * 40 - 20, p.y - 80, 'nt').setDepth(980).setTint(Phaser.Display.Color.HexStringToColor(HERO[p.h].c).color);
+    S.tweens.add({ targets: n, y: n.y - 70, x: n.x + Math.random() * 40 - 20, alpha: 0, duration: 1100, onComplete: () => n.destroy() });
+  }
+}
+function tip(c) {
+  const al = G.P.filter((p) => !p.dead); if (!al.length) return;
+  const p = Phaser.Utils.Array.GetRandom(al), key = Phaser.Utils.Array.GetRandom(['cn', 'bl', 'bl', 'bn']);
+  const x0 = c.spr.x, y0 = c.spr.y - 60, x1 = p.x + Math.random() * 30 - 15, y1 = p.y - 50, spr = S.add.image(x0, y0, key).setDepth(990);
+  if (Math.random() < 0.5) ft(x0, y0 - 40, Phaser.Utils.Array.GetRandom(CHEER), '#fff', 14);
+  S.tweens.addCounter({ from: 0, to: 1, duration: 650, onUpdate: (tw) => {
+    const v = tw.getValue(); spr.setPosition(x0 + (x1 - x0) * v, y0 + (y1 - y0) * v - 130 * Math.sin(v * Math.PI)).setAngle(v * 540);
+  }, onComplete: () => {
+    spr.destroy();
+    if (key == 'bn') { p.hp = Math.min(100, p.hp + 10); tone(660, 0.15, 'triangle', 0.07, 990); ft(x1, y1 - 30, 'PLÁTANO +10', '#f5d400'); }
+    else { const m = key == 'bl' ? 100 : 50; G.score += m; tone(key == 'bl' ? 1046 : 1320, 0.1, 'square', 0.05); ft(x1, y1 - 30, '+$' + m, '#ffd76a'); }
+  } });
+}
+function upCrowd(dt) {
+  G.C.forEach((c) => {
+    const d = c.tx - c.spr.x; c.spr.setDepth(c.spr.y);
+    if (Math.abs(d) > 3) { c.spr.x += Math.sign(d) * 170 * dt; c.spr.y += Math.sin(S.time.now / 90) * 0.6; return; }
+    c.cd -= dt; c.spr.setTexture('q' + c.k + (c.cd < 0.2 ? 1 : 0));
+    if (c.cd <= 0 && G.t > 0.9) { tip(c); c.cd = 0.5 + Math.random() * 0.5; }
+  });
+  if (Math.random() < 0.15) noise(0.03, 0.04);
+}
+
 function upPlay(dt) {
   const cam = S.cameras.main, st = ST[G.si];
   if (G.P.length < 2 && !G.P.some((p) => p.i) && (pressed.START2 || pressed.P2_1)) { mkP(1, (G.P[0].h + 1) % 4); tone(660, 0.15); }
-  G.P.forEach((p) => upP(p, dt));
+  G.P.forEach((p) => (G.ph == 'clear' && !p.dead ? sing(p) : upP(p, dt)));
   G.E.forEach((e) => upE(e, dt)); G.E = G.E.filter((e) => !e.dead);
   G.S.forEach((s) => upS(s, dt));
   G.S = G.S.filter((s) => { if (s.gone) s.spr.destroy(); return !s.gone; });
@@ -741,13 +881,13 @@ function upPlay(dt) {
   } else if (G.ph == 'fight' && !G.E.length) {
     G.wi++;
     if (G.wi >= st.w.length) {
-      G.ph = 'clear'; G.t = 2.2; G.score += 500;
+      G.ph = 'clear'; G.t = 4.8; G.score += 500; fiesta();
       const t = TG(400, 260, G.si == 4 ? '¡LLEGASTE!' : '¡ETAPA SUPERADA!', 46).setScrollFactor(0).setDepth(970);
       S.tweens.add({ targets: t, alpha: 0, delay: 1500, duration: 500, onComplete: () => t.destroy() });
       [523, 659, 784].forEach((f, i) => S.time.delayedCall(i * 120, () => tone(f, 0.2, 'triangle', 0.09)));
     } else { G.ph = 'walk'; G.camMax += 520; }
   } else if (G.ph == 'clear') {
-    G.t -= dt;
+    G.t -= dt; upCrowd(dt);
     if (G.t <= 0) { if (G.si == 4) return end(1); startStage(G.si + 1); }
   }
   G.go.setVisible(G.ph == 'walk' && G.wi > 0 && S.time.now % 600 < 380);
