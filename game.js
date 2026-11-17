@@ -617,9 +617,9 @@ function tip(c) {
 }
 function upCrowd(dt) {
   G.C.forEach((c) => {
-    const d = c.tx - c.spr.x;
+    const d = c.tx - c.spr.x; c.spr.setDepth(c.spr.y);
     if (Math.abs(d) > 3) { c.spr.x += Math.sign(d) * 170 * dt; c.spr.y += Math.sin(S.time.now / 90) * 0.6; return; }
-    c.cd -= dt; c.spr.setTexture('q' + c.k + (c.cd < 0.2 ? 1 : 0)).setDepth(c.spr.y);
+    c.cd -= dt; c.spr.setTexture('q' + c.k + (c.cd < 0.2 ? 1 : 0));
     if (c.cd <= 0 && G.t > 0.9) { tip(c); c.cd = 0.5 + Math.random() * 0.5; }
   });
   if (Math.random() < 0.15) noise(0.03, 0.04);
