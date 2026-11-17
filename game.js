@@ -102,8 +102,8 @@ const VV = [0.07, 0.24, 0.15, 0.17], SONGS = [
 const CHEER = ['¡BRAVO!', '¡OTRA!', '¡BUENA!', '¡ESOOO!', '¡TOMA!'];
 const PUB = [['#c98a5e', '#421', '#3a7'], ['#e0b08a', '#da3', '#e55'], ['#b5764a', '#111', '#58c'], ['#c98a5e', '#888', '#c7a']];
 
-let S, bgB, bgF, bgP, bus, hudG, noiseBuf;
-const G = { st: '', ui: [], hud: [], P: [], E: [], S: [], I: [], C: [], hs: [], score: 0, mt: 0, ms: 0, au: 0 };
+let S, bgB, bgF, bgP, bus, hudG, noiseBuf, cort;
+const G = { st: '', ui: [], hud: [], P: [], E: [], S: [], I: [], C: [], K: [], hs: [], score: 0, mt: 0, ms: 0, au: 0 };
 
 // ---------- Arte procedural ----------
 const R = (x, c, a, b, w, h) => { x.fillStyle = c; x.fillRect(a, b, w, h); };
@@ -192,6 +192,7 @@ function dude(x, k, f) {
     u(3, 8, 3, 1, dk(tp, 0.7)); u(10, 8, 3, 1, dk(tp, 0.7)); u(4, 11, 9, 1, '#ff7a1a'); u(4, 12, 9, 1, '#e8e8e8');
     u(5, 9, 1, 1, '#fc3'); u(9, 8, 1, 3, '#222'); u(9, 7, 1, 1, '#222'); u(7, 15, 2, 1, '#bbb');
   }
+
   // jefes: kioskero (delantal y bigote), micrero (corbata y lentes), guardia del súper (chaleco negro), vendedor (saco al hombro)
   if (k == 9 || k > 10) { u(4, 1, 7, 2, hr); u(10, 2, 3, 1, hr); }
   if (k == 9) { u(5, 10, 6, 7, hr); u(7, 13, 2, 2, '#fbe7a1'); }
@@ -259,6 +260,39 @@ function art() {
   tex('pl', 26, 12, (x) => { R(x, '#f5d400', 2, 6, 22, 4); R(x, '#f5d400', 10, 0, 5, 8); R(x, '#c9a800', 0, 9, 8, 3); R(x, '#c9a800', 18, 9, 8, 3); });
 
   // micros
+  // cortina metálica de local: láminas onduladas, rayados, barra y candado
+  tex('ct', W, H, (x) => {
+    R(x, '#8d939b', 0, 0, W, H);
+    for (let j = 0; j < 570; j += 18) { R(x, '#5f656d', 0, j, W, 3); R(x, '#b9bec5', 0, j + 4, W, 2); R(x, '#7a8088', 0, j + 12, W, 3); }
+    // grafitis: letra gorda en cursiva, contorno negro, relleno degradado, brillo, sombra y chorreado de pintura
+    [['Platanus', 400, 130, 104, -0.05, '#fff35a', '#5fd04a'], ['Buk', 140, 320, 92, 0.1, '#7ad7ff', '#1d5fd6'],
+     ['Kaironda', 560, 300, 70, -0.05, '#ff9af0', '#8a2be2'], ['LS Rules', 230, 470, 60, -0.07, '#ffb347', '#e3261b'],
+     ['OK Ventures', 590, 460, 52, 0.05, '#9ff7e0', '#0aa38a']].forEach(([w, a, b, z, r, c1, c2], n) => {
+      x.save(); x.translate(a, b); x.rotate(r);
+      x.font = 'italic 900 ' + z + 'px Impact, "Arial Black", sans-serif'; x.textAlign = 'center'; x.lineJoin = 'round';
+      const m = x.measureText(w).width, g = x.createLinearGradient(0, -z * 0.7, 0, z * 0.1);
+      g.addColorStop(0, c1); g.addColorStop(1, c2);
+      for (let i = 0; i < 5; i++) R(x, c2, -m / 2 + ((n * 37 + i * 53) % (m | 1)), -2, 4 + i % 2 * 2, 14 + (n * 7 + i * 11) % 26);
+      x.fillStyle = '#0006'; x.fillText(w, 6, 6);
+      x.lineWidth = z / 5; x.strokeStyle = '#111'; x.strokeText(w, 0, 0);
+      x.fillStyle = g; x.fillText(w, 0, 0);
+      x.lineWidth = 2; x.strokeStyle = '#fff9'; x.strokeText(w, -2, -2);
+      x.restore();
+    });
+    R(x, '#4a4f56', 0, 570, W, 30); R(x, '#2c3036', 360, 580, 80, 10); R(x, '#c9a400', 392, 584, 16, 14); R(x, '#8a7000', 397, 580, 6, 6);
+  });
+  // estuche abierto de cada músico para las monedas
+  const cn = (x, a) => a.forEach(([p, q]) => { x.fillStyle = '#ffd24a'; x.beginPath(); x.arc(p, q, 3, 0, 7); x.fill(); });
+  tex('cs0', 72, 32, (x) => { R(x, '#333', 8, 2, 52, 9); R(x, '#222', 4, 11, 60, 17); R(x, '#6a2c91', 8, 14, 52, 11); cn(x, [[20, 19], [34, 21], [46, 18]]); R(x, '#7fbf6a', 26, 15, 12, 5); }, 2);
+  tex('cs1', 72, 32, (x) => {
+    x.fillStyle = '#1a1a1a'; x.beginPath(); x.ellipse(20, 18, 17, 11, 0, 0, 7); x.fill(); R(x, '#1a1a1a', 30, 12, 38, 12);
+    x.fillStyle = '#a01818'; x.beginPath(); x.ellipse(20, 18, 13, 7, 0, 0, 7); x.fill(); R(x, '#a01818', 30, 15, 34, 6); cn(x, [[16, 18], [25, 17], [44, 18]]);
+  }, 2);
+  tex('cs2', 72, 32, (x) => {
+    x.fillStyle = '#1a1a1a'; x.beginPath(); x.ellipse(35, 20, 32, 9, 0, 0, 7); x.fill(); x.strokeStyle = '#d4af37'; x.lineWidth = 2; x.stroke();
+    x.fillStyle = '#3a2a1a'; x.beginPath(); x.ellipse(35, 18, 15, 6, 0, 0, 7); x.fill(); cn(x, [[30, 18], [40, 18], [35, 16]]);
+  }, 2);
+  tex('cs3', 72, 32, (x) => { ['#d22', '#f2c500', '#2a8', '#f7a', '#27c', '#d22'].forEach((c, i) => R(x, c, 2, 6 + i * 4, 66, 4)); cn(x, [[22, 16], [36, 20], [50, 15]]); R(x, '#7fbf6a', 28, 10, 12, 5); }, 2);
   tex('bus0', 240, 100, (x) => {
     R(x, '#f4f1e8', 4, 8, 226, 40); R(x, '#f2c500', 0, 46, 236, 36); R(x, '#222', 0, 80, 236, 4);
     for (let i = 0; i < 5; i++) R(x, '#1c2f4a', 12 + i * 36, 16, 30, 24);
@@ -600,7 +634,7 @@ function upSel() {
   }
   G.sel.forEach((s, i) => { G.cur[i].setVisible(!!s); if (s) G.cur[i].x = 115 + s.h * 190; });
   G.selT.setText('P1: ' + (G.sel[0].ok ? 'LISTO' : 'eligiendo') + '     P2: ' + (G.sel[1] ? (G.sel[1].ok ? 'LISTO' : 'eligiendo') : 'PRESIONA START 2'));
-  if (G.sel.every((s) => !s || s.ok)) startGame();
+  if (G.sel.every((s) => !s || s.ok)) { G.st = 'go'; shut(startGame); }
 }
 function startGame() {
   clearUI(); G.P = []; G.score = 0; G.st = 'play';
@@ -613,13 +647,25 @@ function startGame() {
   G.sel.forEach((s, i) => s && mkP(i, s.h));
   startStage(0);
 }
+// baja la cortina metálica, cambia la escena detrás y la vuelve a subir
+function shut(cb) {
+  cort.y = -H; S.time.addEvent({ delay: 45, repeat: 12, callback: () => noise(0.03, 0.05) });
+  S.tweens.add({ targets: cort, y: 0, duration: 650, ease: 'Bounce.Out', onComplete: () => {
+    noise(0.15, 0.15); tone(70, 0.25, 'square', 0.1, 40);
+    S.time.delayedCall(350, () => {
+      cb(); S.time.addEvent({ delay: 50, repeat: 16, callback: () => noise(0.03, 0.04) });
+      S.tweens.add({ targets: cort, y: -H, duration: 900, ease: 'Cubic.In' });
+    });
+  } });
+}
 function startStage(i) {
   G.si = i; setBg(i);
-  const cam = S.cameras.main; cam.scrollX = 0; cam.fadeIn(400);
+  const cam = S.cameras.main; cam.scrollX = 0;
+  G.K.forEach((k) => k.destroy()); G.K = [];
   [G.E, G.S, G.I, G.C].forEach((l) => l.forEach((o) => o.o.forEach((d) => d.destroy())));
   G.E = []; G.S = []; G.I = []; G.C = [];
-  G.P.forEach((p, j) => { p.x = 110 + j * 50; p.y = 470 + j * 50; });
-  G.wi = 0; G.camMax = 220; G.ph = 'walk'; G.au = 0;
+  G.P.forEach((p, j) => { p.x = 110 + j * 170; p.y = 465 + j * 60; G.K.push(S.add.image(p.x + 58, p.y + 14, 'cs' + p.h).setOrigin(0.5, 1).setScale(Z).setDepth(p.y + 14)); });
+  G.wi = 0; G.camMax = 220; G.ph = 'intro'; G.t = 3.4; G.au = 0;
   G.stT.setText('ETAPA ' + (i + 1) + ' · ' + ST[i].n);
   const t = TG(400, 250, 'ETAPA ' + (i + 1) + '\n' + ST[i].n, 36).setScrollFactor(0).setDepth(970);
   S.tweens.add({ targets: t, alpha: 0, delay: 1400, duration: 500, onComplete: () => t.destroy() });
@@ -627,7 +673,7 @@ function startStage(i) {
 function end(win) {
   G.st = 'end'; G.t = 1.2;
   [G.P, G.E, G.S, G.I, G.C].forEach((l) => l.forEach((o) => o.o.forEach((d) => d.destroy())));
-  G.hud.forEach((o) => o.destroy());
+  G.hud.forEach((o) => o.destroy()); G.K.forEach((k) => k.destroy()); G.K = [];
   G.P = []; G.E = []; G.S = []; G.I = []; G.C = []; S.cameras.main.scrollX = 0;
   G.hs.push(G.score); G.hs.sort((a, b) => b - a); G.hs = G.hs.slice(0, 5);
   getStorage().set('tocata-hs', G.hs);
@@ -889,13 +935,20 @@ function upCrowd(dt) {
 function upPlay(dt) {
   const cam = S.cameras.main, st = ST[G.si];
   if (G.P.length < 2 && !G.P.some((p) => p.i) && (pressed.START2 || pressed.P2_1)) { mkP(1, (G.P[0].h + 1) % 4); tone(660, 0.15); }
-  G.P.forEach((p) => (G.ph == 'clear' && !p.dead ? sing(p) : upP(p, dt)));
+  G.P.forEach((p) => ((G.ph == 'clear' || G.ph == 'intro') && !p.dead ? sing(p) : upP(p, dt)));
   G.E.forEach((e) => upE(e, dt)); G.E = G.E.filter((e) => !e.dead);
   G.S.forEach((s) => upS(s, dt));
   G.S = G.S.filter((s) => { if (s.gone) s.spr.destroy(); return !s.gone; });
   G.I = G.I.filter((it) => { it.t += dt; if (it.t > 12) it.gone = 1; if (it.gone) it.spr.destroy(); return !it.gone; });
   const al = G.P.filter((p) => !p.dead);
-  if (G.ph == 'walk') {
+  if (G.ph == 'intro') {
+    G.t -= dt;
+    if (G.t < 1.6 && Math.random() < 0.06 && G.K.length) {
+      const k = Phaser.Utils.Array.GetRandom(G.K), c = S.add.image(k.x + Math.random() * 30 - 15, k.y - 140, 'cn').setDepth(990);
+      S.tweens.add({ targets: c, y: k.y - 14, duration: 450, ease: 'Quad.In', onComplete: () => { c.destroy(); tone(1320, 0.08, 'square', 0.04); } });
+    }
+    if (G.t <= 0) { G.ph = 'walk'; ft(cam.scrollX + 690, 380, '¡CIRCULE, CIRCULE!', '#7df', 20); tone(1800, 0.25, 'square', 0.05, 1500); }
+  } else if (G.ph == 'walk') {
     if (al.length) cam.scrollX = Math.max(cam.scrollX, Math.min(al.reduce((a, p) => a + p.x, 0) / al.length - 330, G.camMax));
     if (cam.scrollX >= G.camMax - 1) { G.ph = 'fight'; spawn(st.w[G.wi]); }
   } else if (G.ph == 'fight' && !G.E.length) {
@@ -908,7 +961,7 @@ function upPlay(dt) {
     } else { G.ph = 'walk'; G.camMax += 520; }
   } else if (G.ph == 'clear') {
     G.t -= dt; upCrowd(dt);
-    if (G.t <= 0) { if (G.si == 4) return end(1); startStage(G.si + 1); }
+    if (G.t <= 0) { G.ph = 'shut'; shut(() => (G.si == 4 ? end(1) : startStage(G.si + 1))); }
   }
   G.go.setVisible(G.ph == 'walk' && G.wi > 0 && S.time.now % 600 < 380);
   G.au += st.a * dt;
@@ -932,7 +985,7 @@ function upPlay(dt) {
   G.bT.setText(bo ? bo.d.nm : '');
   if (bo) hudG.fillStyle(0, 0.7).fillRect(198, 78, 404, 14).fillStyle(0xff3b30).fillRect(200, 80, 400 * bo.hp / bo.d.hp, 10);
   G.scT.setText('PROPINAS $' + G.score);
-  if (G.P.every((p) => p.dead && p.lv <= 0)) end(0);
+  if (G.ph != 'shut' && G.P.every((p) => p.dead && p.lv <= 0)) { G.ph = 'shut'; shut(() => end(0)); }
 }
 
 // ---------- Phaser ----------
@@ -950,6 +1003,7 @@ function create() {
   bus = S.add.image(-300, 394, 'bus0').setOrigin(0.5, 1).setDepth(-15); bus.v = 200;
   bgP = S.add.tileSprite(0, 0, W, H, 'p0').setOrigin(0).setScrollFactor(0).setDepth(-10);
   const cam = S.cameras.main; if (cam.postFX) cam.postFX.addVignette(0.5, 0.5, 1, 0.15);
+  cort = S.add.image(0, -H, 'ct').setOrigin(0).setScrollFactor(0).setDepth(965);
   getStorage().get('tocata-hs').then((r) => {
     if (r.found && Array.isArray(r.value)) G.hs = r.value.filter((n) => typeof n == 'number').slice(0, 5);
     if (G.st == 'title') toTitle();
@@ -964,7 +1018,7 @@ function update(time, delta) {
     if (pressed.START1 || pressed.START2 || pressed.P1_1) { tone(660, 0.15); toSelect(); }
   } else if (G.st == 'sel') upSel();
   else if (G.st == 'play') upPlay(dt);
-  else if (G.st == 'end') { G.t -= dt; if (G.t < 0 && (pressed.START1 || pressed.START2 || pressed.P1_1)) toTitle(); }
+  else if (G.st == 'end') { G.t -= dt; if (G.t < 0 && (pressed.START1 || pressed.START2 || pressed.P1_1)) { G.st = 'go'; shut(toTitle); } }
   bgB.tilePositionX = sx * 0.3 + G.au; bgF.tilePositionX = sx; bgP.tilePositionX = sx;
   music(dt);
   pressed = Object.create(null);
