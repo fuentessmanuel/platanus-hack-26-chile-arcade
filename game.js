@@ -82,9 +82,14 @@ const ST = [
   { n: 'ESTACIÓN LOS PLÁTANOS', b: 'b4', f: 'f3', a: 0, w: ['gcc', 'gaga', 'ggdac', 'V'] },
   { n: 'DENTRO DEL METRO', b: 'b4', f: 'f4', a: 700, w: ['ggc', 'gcaga', 'gga', 'B'] },
 ];
-const MEL = [
-  [0, , 3, 5, 7, , 7, 5, 3, , 0, 3, 5, , 3, , 7, , 10, 12, 10, , 7, 5, 7, , 5, 3, 0, , , ],
-  [7, 7, 10, 7, 12, , 10, 7, 5, 5, 7, 5, 3, , 0, , 7, 7, 10, 7, 12, , 15, 12, 10, , 7, 5, 7, , , ],
+// Música de fondo por músico: [melodía (32 pasos, semitonos), onda, seg/paso, nota base, duración, volumen, batería (k bombo, s caja, h platillo), bajo]
+// 0 rapero: boom bap con swing · 1 metalero: galope rápido con quintas · 2 romántico: balada lenta · 3 andino: huayno pentatónico · 4 título
+const MU = [
+  [[0, , , 3, , , 0, , 5, , 3, , 0, , , , 7, , , 5, , , 3, , 5, , 3, , 0, , -2, ], 'square', 0.16, 330, 0.2, 0.03, 'k.h.s.hkk.h.s.h.', [0, 0, -4, -2]],
+  [[0, 0, 0, 12, 0, 0, 10, 0, 0, 8, 0, 0, 7, 0, 5, 7, 0, 0, 0, 12, 0, 0, 13, 0, 0, 12, 0, 0, 10, 8, 7, 5], 'sawtooth', 0.11, 110, 0.1, 0.026, 'k.kks.kkk.kks.kk', [0, 0, 3, -2]],
+  [[4, , 5, 7, , , 12, , 11, , 9, 7, , , , , 5, , 7, 9, , , 14, , 12, , 11, 9, 7, , , ], 'triangle', 0.22, 440, 0.34, 0.05, 'k..h.h.hs..h.h.h', [0, -3, 5, 7]],
+  [[12, , 10, 12, 7, , 5, 7, 3, , 5, 7, 0, , , , 12, , 10, 12, 15, , 12, 10, 7, , 5, 3, 0, , , ], 'sine', 0.14, 440, 0.15, 0.05, 'k..kk.h.k..kk.h.', [0, 0, 3, -2]],
+  [[0, , 3, 5, 7, , 7, 5, 3, , 0, 3, 5, , 3, , 7, , 10, 12, 10, , 7, 5, 7, , 5, 3, 0, , , ], 'sine', 0.17, 440, 0.16, 0.035, 'k.s.k.s.k.s.k.s.', [0, 0, 3, -2]],
 ];
 const WAVE = ['square', 'sawtooth', 'triangle', 'sine'];
 // celebración al pasar etapa: lo que canta cada héroe, su tono de voz y la gente que da propinas
@@ -562,12 +567,18 @@ function band(h) {
 function music(dt) {
   G.mt -= dt; if (G.mt > 0) return;
   if (G.st == 'play' && G.ph == 'clear') { G.mt = 0.1; return; } // calla el fondo: suena la banda del héroe
-  const si = G.st == 'play' ? G.si : 0, m = MEL[si % 2], i = G.ms++ % 32, n = m[i];
-  G.mt += 0.17 - si * 0.012 - (G.st == 'play' && G.bo ? 0.03 : 0);
-  if (n != null) tone(440 * Math.pow(2, n / 12), 0.16, WAVE[G.P[0] ? G.P[0].h : 3], 0.035);
-  if (i % 8 == 0) tone(110 * Math.pow(2, [0, 0, 3, -2][(G.ms >> 3) % 4] / 12), 0.3, 'triangle', 0.09);
-  if (i % 4 == 0) tone(95, 0.12, 'sine', 0.12, 40);
-  if (i % 4 == 2) noise(0.04, 0.03);
+  // en juego suena el tema del músico; con dos jugadores se turnan cada vuelta de 32 pasos
+  const pl = G.st == 'play' && G.P.length ? G.P[(G.ms >> 5) % G.P.length].h : 4, u = MU[pl];
+  const si = G.st == 'play' ? G.si : 0, i = G.ms++ % 32, n = u[0][i], tr = si % 2 * 2, d = u[6][i % 16];
+  G.mt += (u[2] - si * 0.008 - (G.st == 'play' && G.bo ? 0.02 : 0)) * (pl ? 1 : i % 2 ? 0.78 : 1.22);
+  if (n != null) {
+    const f = u[3] * Math.pow(2, (n + tr) / 12);
+    tone(f, u[4], u[1], u[5]); if (pl == 1) tone(f * 1.5, u[4], u[1], u[5] * 0.7);
+  }
+  if (i % 8 == 0) tone(110 * Math.pow(2, (u[7][(G.ms >> 3) % 4] + tr) / 12), 0.3, 'triangle', 0.09);
+  if (d == 'k') tone(95, 0.12, 'sine', 0.12, 40);
+  if (d == 's') noise(0.07, 0.05);
+  if (d == 'h') noise(0.03, 0.02);
 }
 
 // ---------- Utilidades ----------
