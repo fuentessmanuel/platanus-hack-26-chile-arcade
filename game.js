@@ -331,11 +331,70 @@ function voice(f, d, v, h) {
   g.gain.setValueAtTime(a, e - Math.min(0.12, d * 0.4)); g.gain.exponentialRampToValueAtTime(0.001, e);
   g.connect(c.destination); [o, l, s].forEach((x) => { x.start(t); x.stop(e); });
 }
+function band(h) {
+  const c = S.sound.context; if (!c || c.state != 'running') return;
+  if (!c.bn) {
+    c.bn = c.createBuffer(1, c.sampleRate, c.sampleRate); const a = c.bn.getChannelData(0); for (let i = 0; i < a.length; i++) a[i] = Math.random() * 2 - 1;
+    c.ws = new Float32Array(256); for (let i = 0; i < 256; i++) c.ws[i] = Math.tanh((i / 128 - 1) * 6);
+  }
+  const t0 = c.currentTime + 0.25, P = 0.3, r = VB[h] / 2, F = (s) => r * 2 ** (s / 12), R = [0, 0, 5, 5, 0, 0, 7, 0], M = c.createGain();
+  M.gain.value = [0.046, 0.038, 0.067, 0.078][h]; M.connect(c.destination);
+  // oscilador: t inicio, f, d, tipo, v, filtro q->q2 (paso bajo), glissando sl, destino D, vibrato vb, ataque at
+  const O = (t, f, d, y, v, q, q2, sl, D, vb, at) => {
+    const o = c.createOscillator(), g = c.createGain(), b = c.createBiquadFilter(); o.type = y; o.frequency.setValueAtTime(f, t); o.detune.value = Math.random() * 14 - 7;
+    if (sl) o.frequency.exponentialRampToValueAtTime(sl, t + d);
+    b.frequency.setValueAtTime(q || 2e4, t); if (q2) b.frequency.exponentialRampToValueAtTime(q2, t + 0.08);
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(v, t + Math.abs(at || 0.005)); if (at < 0) g.gain.setValueAtTime(v, t + d - 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    if (vb) { const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = 5.8; lg.gain.value = f * vb; l.connect(lg); lg.connect(o.frequency); l.start(t); l.stop(t + d); }
+    o.connect(b); b.connect(g); g.connect(D || M); o.start(t); o.stop(t + d);
+  };
+  const N = (t, d, v, q, y) => {
+    const s = c.createBufferSource(), b = c.createBiquadFilter(), g = c.createGain(); s.buffer = c.bn; b.type = y || 'highpass'; b.frequency.value = q;
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d); s.connect(b); b.connect(g); g.connect(M); s.start(t, Math.random() * 0.5); s.stop(t + d);
+  };
+  const K = (t, v, d, f) => O(t, f || 150, d || 0.25, 'sine', v, 0, 0, (f || 150) * 0.3);
+  // rasgueo: acorde en s, notas n, escalonado 9 ms, pluck con filtro que cae
+  const St = (t, s, v, o, d, up) => [0, 7, 12, 16, 19].forEach((n, k) => O(t + (up ? 4 - k : k) * 0.009, F(s + n + o), d, 'sawtooth', v, 5000, 900));
+  let W;
+  if (h == 1) {
+    W = c.createGain(); W.gain.value = 12; const w = c.createWaveShaper(), b = c.createBiquadFilter(), hp = c.createBiquadFilter(), g = c.createGain(); w.curve = c.ws;
+    b.frequency.value = 4500; hp.type = 'highpass'; hp.frequency.value = 150; g.gain.value = 0.4; W.connect(w); w.connect(hp); hp.connect(b); b.connect(g); g.connect(M);
+  }
+  for (let i = 0; i < 8; i++) {
+    const T = t0 + i * P, s = R[i];
+    if (h == 0) {
+      if (i % 4 == 0 || i == 3 || i == 5) { K(T, 0.9, 0.5); O(T, F(s - 12), i == 7 ? 0.9 : 0.45, 'sine', 0.5); }
+      if (i % 4 == 2) { N(T, 0.18, 0.45, 1200, 'bandpass'); N(T + 0.012, 0.12, 0.3, 1500, 'bandpass'); }
+      for (let k = 0; k < (i % 4 == 3 ? 4 : 2); k++) N(T + k * P / (i % 4 == 3 ? 4 : 2), 0.04, 0.12, 7000);
+      if (i % 2 == 0) [0, 4, 7, 11].forEach((n) => O(T, F(s + n + 12), 0.5, 'sawtooth', 0.05, 2500, 400));
+    } else if (h == 1) {
+      for (let k = 0; k < 4; k++) K(T + k * 0.075, 0.35, 0.08, 110);
+      const op = i % 4 == 0 || i == 7;
+      for (let k = 0; k < (op ? 1 : 2); k++) [0, 7, 12, 0.1].forEach((n) => O(T + k * 0.15, F(s + n), op ? (i == 7 ? 1 : P) : 0.15, 'sawtooth', 0.3, op ? 0 : 1500, 0, 0, W, 0, -0.004));
+      if (i % 2) { N(T, 0.2, 0.5, 1800, 'bandpass'); K(T, 0.3, 0.1, 200); }
+      if (i == 0 || i == 4 || i == 7) N(T, 1.2, 0.18, 5000);
+    } else if (h == 2) {
+      O(T, F(s + (i % 2 ? 7 : 0) - 12), 0.28, 'triangle', 0.8, 800, 300);
+      St(T + 0.15, s, 0.035, 0, 0.12);
+      if (i % 2 == 0) [4, 7, 12].forEach((n) => O(T, F(s + n + 12), 0.6, 'sawtooth', 0.16, 3000, 0, 0, 0, 0.012, 0.15));
+      const Tp = (t, n, d) => [n, n - (n % 12 == 4 ? 4 : n % 12 == 7 ? 3 : 5)].forEach((m) => O(t, F(s + m + 12), d, 'sawtooth', 0.15, 700, 3800, 0, 0, d > 0.2 ? 0.01 : 0, -0.02));
+      if (i == 1 || i == 3 || i == 5) [[16, 0.12, 0.07], [19, 0.19, 0.07], [24, 0.26, 0.2]].forEach(([n, d, l]) => Tp(T + d, n, l));
+      if (i == 7) { [0, 0.1, 0.2].forEach((d) => Tp(T + d, 19, 0.08)); Tp(T + 0.3, 24, 0.8); Tp(T + 0.3, 16, 0.8); }
+    } else {
+      K(T, 0.6, 0.35, 95); N(T, 0.12, 0.5, 250, 'lowpass');
+      [0.15, 0.225].forEach((d) => { N(T + d, 0.05, 0.5, 900, 'bandpass'); N(T + d, 0.1, 0.25, 250, 'lowpass'); });
+      for (let k = 0; k < 4; k++) St(T + k * 0.075, s, k ? 0.06 : 0.09, 12, 0.1, k % 2);
+      const f = VB[h] * 2 ** ((SONG[i] + (SONG[i] % 12 > 6 ? 3 : 4)) / 12) * 2;
+      O(T + 0.01, f, i == 7 ? 0.9 : P, 'sine', 0.6, 0, 0, 0, 0, 0.008, -0.05); N(T + 0.01, 0.08, 0.35, f * 2, 'bandpass'); N(T + 0.01, i == 7 ? 0.9 : P, 0.25, f, 'bandpass');
+    }
+  }
+}
 function music(dt) {
   G.mt -= dt; if (G.mt > 0) return;
+  if (G.st == 'play' && G.ph == 'clear') { G.mt = 0.1; return; } // calla el fondo: suena la banda del héroe
   const si = G.st == 'play' ? G.si : 0, m = MEL[si % 2], i = G.ms++ % 32, n = m[i];
   G.mt += 0.17 - si * 0.012;
-  if (n != null && !(G.st == 'play' && G.ph == 'clear')) tone(440 * Math.pow(2, n / 12), 0.16, WAVE[G.P[0] ? G.P[0].h : 3], 0.035);
+  if (n != null) tone(440 * Math.pow(2, n / 12), 0.16, WAVE[G.P[0] ? G.P[0].h : 3], 0.035);
   if (i % 8 == 0) tone(110 * Math.pow(2, [0, 0, 3, -2][(G.ms >> 3) % 4] / 12), 0.3, 'triangle', 0.09);
   if (i % 4 == 0) tone(95, 0.12, 'sine', 0.12, 40);
   if (i % 4 == 2) noise(0.04, 0.03);
@@ -592,6 +651,7 @@ function upS(s, dt) {
 // ---------- Celebración: cantan y el público da propinas ----------
 function fiesta() {
   const sx = S.cameras.main.scrollX, al = G.P.filter((p) => !p.dead);
+  if (al.length) band(al[0].h);
   al.forEach((p, j) => {
     const t = T(p.x, p.y - 125, LY[p.h], 16, HERO[p.h].c).setDepth(980);
     S.tweens.add({ targets: t, y: t.y - 30, alpha: 0, delay: 2200, duration: 700, onComplete: () => t.destroy() });
