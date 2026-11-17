@@ -1,4 +1,4 @@
-// TOCATA SANTIAGO — Platanus Hack 26 Arcade
+// SEÑORES PASAJEROS — Platanus Hack 26 Arcade
 // Beat 'em up de músicos ambulantes. Todo el arte y el sonido se generan con código.
 
 const W = 800, H = 600, Z = 4 / 3; // Z: escala de personajes (pixel de 4 px)
@@ -596,10 +596,10 @@ function setBg(i) {
 // ---------- Pantallas ----------
 function toTitle() {
   clearUI(); G.st = 'title'; S.cameras.main.scrollX = 0; setBg(0);
-  U(TG(400, 150, 'TOCATA', 116));
-  U(T(400, 232, 'S A N T I A G O', 30, '#ffe07a')).setFontFamily('Georgia, serif').setStroke('#5a1650', 8);
-  U(S.add.rectangle(400, 280, 420, 28, 0x2a0e08, 0.8));
-  U(T(400, 280, 'músicos ambulantes contra la ciudad', 16, '#fff')).setStroke('#2a0e08', 6);
+  U(TG(400, 108, 'SEÑORES', 88));
+  U(TG(400, 198, 'PASAJEROS', 78));
+  U(S.add.rectangle(400, 280, 470, 28, 0x2a0e08, 0.8));
+  U(T(400, 280, 'músicos ambulantes sobreviviendo a la ciudad', 16, '#fff')).setStroke('#2a0e08', 6);
   [0, 1, 2, 3].forEach((i) => U(S.add.image(250 + i * 100, 500, 'd' + i + '0').setOrigin(0.46, 1).setScale(1.5)));
   G.blink = U(T(400, 560, 'PRESIONA START', 22, '#fff'));
   if (G.hs.length) U(T(400, 330, 'MEJORES PROPINAS  ' + G.hs.map((n) => '$' + n).join('  '), 13, '#ffd76a'));
