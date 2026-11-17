@@ -61,11 +61,11 @@ const LK = [
   ['#c98a5e', '#a11', '#33203a', '#33203a', '#111'],
 ];
 const EN = {
-  c: { k: 4, hp: 5, spd: 125, dmg: 6, rng: 52, say: '¡CHICLE A CIEN!' },
-  a: { k: 5, hp: 6, spd: 95, dmg: 8, rng: 240, sh: 1, say: '¡AGÜITA A LUCA!' },
-  d: { k: 6, hp: 10, spd: 85, dmg: 10, rng: 58, say: '¡DULCES, LLEVE!' },
-  g: { k: 7, hp: 16, spd: 105, dmg: 14, rng: 62, say: '¡AQUÍ NO SE CANTA!' },
-  B: { k: 8, hp: 110, spd: 95, dmg: 18, rng: 90, sc: 1.5, say: '¡DESALOJEN!' },
+  c: { k: 4, hp: 5, spd: 125, dmg: 6, rng: 52, say: ['¡CHICLE A CIEN!', '¡TRES POR LUCA!', '¡UNA AYUDITA, CASERO!'], st: 1 },
+  a: { k: 5, hp: 6, spd: 95, dmg: 8, rng: 240, sh: 1, say: ['¡AGÜITA HELADA!', '¡MOTE CON HUESILLO!', '¡A LUCA, A LUCA!'] },
+  d: { k: 6, hp: 10, spd: 85, dmg: 10, rng: 58, say: ['¡CUCHUFLÍ, BARQUILLO!', '¡OIGA, MIJITO!', '¡ALFAJOR, CALUGA!'] },
+  g: { k: 7, hp: 16, spd: 105, dmg: 14, rng: 62, say: ['¡AQUÍ NO SE CANTA!', '¡CIRCULE, CIRCULE!', '¡SU PERMISO!'], ch: 1 },
+  B: { k: 8, hp: 110, spd: 95, dmg: 18, rng: 90, sc: 1.5, say: ['¡DESALOJEN!', '¡MULTA!', '¿Y EL PERMISO MUNICIPAL?'] },
 };
 const ST = [
   { n: 'LA ALAMEDA', b: 'b0', f: 'f0', p: 1, a: 0, w: ['cc', 'ccac', 'cdcac'] },
@@ -145,16 +145,29 @@ function dude(x, k, f) {
     u(2, 8, 12, 7, tp); u(2, 10, 12, 1, '#f2c500'); u(2, 12, 12, 1, '#2a8'); u(2, 14, 12, 1, '#fff');
     u(4, 0, 7, 3, hr); u(4, 2, 7, 1, '#f2c500'); u(5, 3, 2, 4, hr); u(5, 7, 1, 2, '#f2c500'); u(6, -1, 3, 1, '#f2c500'); u(7, -1, 1, 1, '#fff');
   }
-  if (k == 4) { u(4, 1, 7, 2, hr); u(10, 2, 3, 1, hr); u(8, 6, 3, 1, dk(sk, 0.8)); } // chiclero
-  if (k == 5) { u(3, 2, 9, 1, hr); u(4, 0, 7, 2, hr); u(4, 9, 8, 6, '#eee'); } // agüita: sombrero de pescador
-  if (k == 6) { u(4, 1, 7, 2, hr); u(2, 1, 3, 3, hr); u(4, 3, 1, 4, hr); u(6, 6, 1, 1, '#fd4'); u(5, 10, 6, 6, '#fff'); u(5, 10, 6, 1, '#f7a'); } // señora de los dulces
-  if (k == 7) { // guardia: gorra con placa, lentes, chaleco reflectante
-    u(4, 1, 7, 2, hr); u(10, 2, 3, 1, '#000'); u(6, 1, 1, 1, '#fc3'); u(8, 4, 3, 1, '#111');
-    u(4, 9, 8, 5, '#c6e00a'); u(4, 11, 8, 1, '#ccc');
+  // guatita para los grandotes: agüita, guardia e inspector
+  if (k == 5 || k > 6) { u(10, 9, 3, 6, tp); u(3, 8, 2, 3, tp); }
+  if (k == 4) { // chiclero: flaco, jockey, polera a rayas, mondadientes, caja colgando del cuello
+    u(4, 1, 7, 2, hr); u(10, 2, 3, 1, hr); u(8, 6, 3, 1, dk(sk, 0.8)); u(11, 6, 2, 1, '#e8d08a');
+    u(4, 10, 8, 1, '#fff'); u(4, 12, 8, 1, '#fff'); u(4, 14, 8, 1, '#fff'); u(9, 8, 1, 4, '#6b4423'); u(4, 20, 2, 1, '#9ab');
   }
-  if (k == 8) { // inspector jefe: quepis con galón, bigotazo, terno, corbata
-    u(3, 0, 9, 2, hr); u(3, 2, 9, 1, '#fc3'); u(10, 3, 3, 1, '#000'); u(8, 5, 4, 1, '#eee');
-    u(7, 8, 2, 2, '#fff'); u(7, 10, 1, 4, '#d22'); u(5, 12, 1, 1, '#fc3'); u(10, 12, 1, 1, '#fc3');
+  if (k == 5) { // agüita: sombrero de paja, bigote, nariz quemada, toalla al hombro, delantal
+    u(2, 1, 11, 1, '#e8c87a'); u(4, -1, 7, 2, '#e8c87a'); u(4, 0, 7, 1, '#d22');
+    u(9, 5, 2, 1, '#3a2414'); u(11, 4, 1, 1, '#e66'); u(4, 8, 3, 3, '#fff'); u(5, 11, 7, 5, '#3a7ac0');
+  }
+  if (k == 6) { // señora de los dulces: tubos en el pelo, chal con flecos, delantal floreado, labios rojos
+    u(4, 1, 7, 2, hr); u(2, 1, 3, 3, hr); u(4, 3, 1, 4, hr); u(4, 0, 2, 1, '#f7a'); u(7, 0, 2, 1, '#7cf'); u(10, 1, 1, 2, '#f7a');
+    u(6, 6, 1, 1, '#fd4'); u(9, 6, 1, 1, '#c22'); u(3, 8, 9, 3, '#7a3b6a'); u(3, 11, 9, 1, '#c98ac0');
+    u(5, 12, 6, 4, '#fff'); u(6, 13, 1, 1, '#f44'); u(9, 12, 1, 1, '#4c8'); u(7, 15, 1, 1, '#36f');
+  }
+  if (k == 7) { // guardia: gorra con placa, lentes, bigote, chaleco reflectante, radio, hebilla
+    u(4, 1, 7, 2, hr); u(10, 2, 3, 1, '#000'); u(6, 1, 1, 1, '#fc3'); u(8, 4, 3, 1, '#111'); u(8, 5, 3, 1, '#2a1a10');
+    u(4, 9, 9, 5, '#c6e00a'); u(4, 11, 9, 1, '#ccc'); u(7, 15, 2, 1, '#fc3'); u(2, 10, 2, 3, '#222'); u(2, 7, 1, 3, '#222');
+  }
+  if (k == 8) { // inspector jefe: quepis con galón, bigotazo, charreteras, medallas, corbata, pito
+    u(3, 0, 9, 2, hr); u(3, 2, 9, 1, '#fc3'); u(10, 3, 3, 1, '#000'); u(8, 5, 4, 1, '#eee'); u(7, 6, 1, 1, '#eee');
+    u(3, 8, 3, 1, '#fc3'); u(10, 8, 3, 1, '#fc3'); u(7, 8, 2, 2, '#fff'); u(7, 10, 1, 4, '#d22');
+    u(5, 10, 1, 2, '#3af'); u(5, 12, 1, 1, '#fc3'); u(11, 11, 1, 1, '#fc3'); u(9, 9, 1, 3, '#ddd'); u(9, 12, 1, 1, '#bbb');
   }
   // brazo de adelante según el cuadro
   if (A && k == 3) u(10, 8, 3, 2, tp);
@@ -525,8 +538,9 @@ function drop(x, y, key) {
 }
 function hitE(e, dmg, dir, p) {
   if (e.dead) return;
-  e.hp -= dmg; e.stun = Math.max(e.stun, 0.35); e.kx = dir * (e.d.sc ? 90 : 240); e.wind = 0;
-  e.spr.setTintFill(0xffffff); S.time.delayedCall(70, () => e.spr.active && e.spr.clearTint());
+  e.hp -= dmg; e.stun = Math.max(e.stun, 0.35);
+  if (e.d.sc && !e.rage && e.hp < e.d.hp / 2) { e.rage = 1; e.spr.setTint(0xff9090); ft(e.x, e.y - 180, '¡AHORA SÍ QUE SÍ!', '#f55', 22); S.cameras.main.shake(300, 0.012); } e.kx = dir * (e.d.sc ? 90 : 240); e.wind = 0;
+  e.spr.setTintFill(0xffffff); S.time.delayedCall(70, () => e.spr.active && (e.rage ? e.spr.setTint(0xff9090) : e.spr.clearTint()));
   noise(0.08, 0.12); tone(180, 0.08, 'square', 0.05, 70);
   if (p) p.sp = Math.min(100, p.sp + 7);
   G.score += 10;
@@ -543,6 +557,7 @@ function hurtP(p, dmg, dir) {
   p.hp -= dmg; p.hurt = 0.3; p.inv = 0.9; p.x += dir * 24;
   S.cameras.main.shake(120, 0.006); noise(0.12, 0.15); tone(120, 0.15, 'sawtooth', 0.06, 50);
   if (p.hp <= 0) { p.dead = 1; p.lv--; p.rt = 1.8; p.hp = 0; ft(p.x, p.y - 100, p.lv > 0 ? '¡AY!' : '¡FUERA!', '#f55', 22); }
+  return 1;
 }
 function attack(p) {
   const h = HERO[p.h]; p.cd = h.cd; p.at = p.am = 170;
@@ -623,21 +638,26 @@ function upE(e, dt) {
       if (e.wind <= 0) {
         e.cool = 1 + Math.random() * 1.2;
         if (d.sh) { shot(e.x + e.f * 30, e.y, 40, e.f * 300, d.dmg, 1, 'bt', 0, 2.4); tone(500, 0.1, 'sine', 0.05, 250); }
-        else if (Math.abs(dx) < d.rng + 26 && Math.abs(dy) < 28 && t.z < 34) hurtP(t, d.dmg, e.f);
+        else if (Math.abs(dx) < d.rng + 26 && Math.abs(dy) < 28 && t.z < 34 && hurtP(t, d.dmg, e.f) && d.st && G.score > 0) {
+          G.score = Math.max(0, G.score - 50); ft(t.x, t.y - 130, '-$50 ¡GRACIAS!', '#f55', 14); tone(1320, 0.1, 'square', 0.05, 600);
+        }
       }
     } else {
       e.f = dx > 0 ? 1 : -1; e.cool -= dt;
       const sx = S.cameras.main.scrollX, gx = Phaser.Math.Clamp(t.x - e.f * (d.rng - 12), sx + 40, sx + 760), gy = t.y + (d.sh ? 0 : e.oy), ax = gx - e.x, ay = gy - e.y, m = Math.hypot(ax, ay);
-      if (m > 12) { e.x += (ax / m) * d.spd * dt; e.y += (ay / m) * d.spd * 0.7 * dt; fr = [1, 0, 2, 0][(now / 140 | 0) % 4]; }
+      const ch = d.ch && Math.abs(dx) > 180;
+      if (ch && !e.yl) { e.yl = 1; ft(e.x, e.y - 124, '¡ALTO AHÍ!', '#7df', 14); } else if (!ch) e.yl = 0;
+      const sp = d.spd * (ch ? 2.3 : 1) * (e.rage ? 1.45 : 1);
+      if (m > 12) { e.x += (ax / m) * sp * dt; e.y += (ay / m) * sp * 0.7 * dt; fr = [1, 0, 2, 0][(now / 140 | 0) % 4]; }
       if (Math.abs(ax) < 30 && Math.abs(dy) < 22 && e.cool <= 0 && onScr(e)) {
         // un solo grito a la vez, para que los globos no se pisen
-        e.wind = 0.42; if (now > (G.say || 0) && Math.random() < 0.5) { G.say = now + 1400; ft(e.x, e.y - 124 * (d.sc || 1), d.say, '#fff', 13); }
+        e.wind = 0.42; if (now > (G.say || 0) && Math.random() < 0.5) { G.say = now + 1400; ft(e.x, e.y - 124 * (d.sc || 1), d.say[Math.random() * 3 | 0], '#fff', 13); }
       }
     }
   }
   e.y = Phaser.Math.Clamp(e.y, 412, 578);
   e.spr.setTexture('d' + d.k + fr).setPosition(e.x, e.y).setFlipX(e.f < 0).setDepth(e.y);
-  if (tint && now % 120 < 60) e.spr.setTint(0xff7777); else if (!e.spr.isTinted || tint || e.stun <= 0.28) e.spr.clearTint();
+  if (tint && now % 120 < 60) e.spr.setTint(0xff7777); else if (!e.spr.isTinted || tint || e.stun <= 0.28) e.rage ? e.spr.setTint(0xff9090) : e.spr.clearTint();
   e.sh.setPosition(e.x, e.y);
 }
 function upS(s, dt) {
