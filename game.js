@@ -312,14 +312,24 @@ function noise(d, v) {
   s.buffer = noiseBuf; g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + d);
   s.connect(g); g.connect(c.destination); s.start(t); s.stop(t + d);
 }
-function voice(f, d, v) {
+function voice(f, d, v, h) {
   const c = S.sound.context; if (!c || c.state != 'running') return;
-  const o = c.createOscillator(), l = c.createOscillator(), lg = c.createGain(), fl = c.createBiquadFilter(), g = c.createGain(), t = c.currentTime;
-  o.type = 'sawtooth'; o.frequency.value = f; l.frequency.value = 5.5; lg.gain.value = f * 0.025;
-  fl.type = 'bandpass'; fl.frequency.value = 900; fl.Q.value = 1.5;
-  g.gain.setValueAtTime(0.001, t); g.gain.linearRampToValueAtTime(v, t + 0.05); g.gain.setValueAtTime(v, t + d * 0.7); g.gain.exponentialRampToValueAtTime(0.001, t + d);
-  l.connect(lg); lg.connect(o.frequency); o.connect(fl); fl.connect(g); g.connect(c.destination);
-  o.start(t); l.start(t); o.stop(t + d); l.stop(t + d);
+  if (!c.gw) {
+    const r = new Float32Array(48), m = new Float32Array(48); for (let n = 1; n < 48; n++) m[n] = n ** -0.6; c.gw = c.createPeriodicWave(r, m);
+    c.nb = c.createBuffer(1, c.sampleRate, c.sampleRate); const a = c.nb.getChannelData(0); for (let i = 0; i < a.length; i++) a[i] = Math.random() * 2 - 1;
+  }
+  const t = c.currentTime, e = t + d, V = [[500, 850, 2500], [450, 1950, 2600]][h] || [750, 1200, 2600], L = [330, 1000, 2700];
+  const o = c.createOscillator(), l = c.createOscillator(), lg = c.createGain(), s = c.createBufferSource(), sg = c.createGain(), g = c.createGain(), a = v * 0.17;
+  o.setPeriodicWave(c.gw); o.frequency.setValueAtTime(f * 0.88, t); o.frequency.exponentialRampToValueAtTime(f, t + 0.08);
+  l.frequency.value = 5.4; lg.gain.setValueAtTime(0, t + 0.12); lg.gain.linearRampToValueAtTime(f * (d > 0.5 ? 0.045 : 0.02), t + Math.min(d, 0.5));
+  l.connect(lg); lg.connect(o.frequency); s.buffer = c.nb; sg.gain.value = 0.03; s.connect(sg);
+  let p = g;
+  V.forEach((F, i) => { const b = c.createBiquadFilter(); b.type = 'peaking'; b.Q.value = [8, 13, 16][i]; b.gain.value = [30, 26, 24][i];
+    b.frequency.setValueAtTime(L[i], t); b.frequency.linearRampToValueAtTime(F, t + 0.07); b.connect(p); p = b; });
+  o.connect(p); sg.connect(p);
+  g.gain.setValueAtTime(0.001, t); g.gain.linearRampToValueAtTime(a * 0.4, t + 0.03); g.gain.linearRampToValueAtTime(a, t + 0.1);
+  g.gain.setValueAtTime(a, e - Math.min(0.12, d * 0.4)); g.gain.exponentialRampToValueAtTime(0.001, e);
+  g.connect(c.destination); [o, l, s].forEach((x) => { x.start(t); x.stop(e); });
 }
 function music(dt) {
   G.mt -= dt; if (G.mt > 0) return;
@@ -585,7 +595,7 @@ function fiesta() {
   al.forEach((p, j) => {
     const t = T(p.x, p.y - 125, LY[p.h], 16, HERO[p.h].c).setDepth(980);
     S.tweens.add({ targets: t, y: t.y - 30, alpha: 0, delay: 2200, duration: 700, onComplete: () => t.destroy() });
-    SONG.forEach((n, i) => S.time.delayedCall(250 + i * 300, () => voice(VB[p.h] * Math.pow(2, (n + j * 4) / 12), i == 7 ? 0.8 : 0.3, 0.13)));
+    SONG.forEach((n, i) => S.time.delayedCall(250 + i * 300, () => voice(VB[p.h] * Math.pow(2, (n + j * 4) / 12), i == 7 ? 0.8 : 0.3, 0.13, p.h)));
   });
   for (let j = 0; j < 6; j++) {
     const L = j % 2, spr = S.add.image(sx + (L ? -40 : 840), 420 + (j % 3) * 9, 'q' + (j % 4) + '0').setOrigin(0.5, 1).setFlipX(!L);
