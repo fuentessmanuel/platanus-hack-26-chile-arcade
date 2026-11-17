@@ -89,7 +89,16 @@ const MEL = [
 const WAVE = ['square', 'sawtooth', 'triangle', 'sine'];
 // celebración al pasar etapa: lo que canta cada héroe, su tono de voz y la gente que da propinas
 const LY = ['♪ ¡YO YO, SANTIAGO! ♪', '♪ ¡YEAAAAAH! ♪', '♪ ¡AY, AMOOOR! ♪', '♪ ¡LA LA LAY! ♪'];
-const VB = [196, 147, 220, 262], SONG = [0, 4, 7, 9, 7, 4, 7, 12];
+const VB = [196, 147, 220, 262];
+// Canciones originales: [semitono sobre VB[h], inicio en pulsos, duración en pulsos].
+// PU = segundos por pulso; tm(h,k) = segundos del pulso k (el rapero lleva swing en los impares). VV = volumen de voz.
+const PU = [0.158, 0.144, 0.3125, 0.12], tm = (h, k) => PU[h] * (k + (h || !(k % 2) ? 0 : 0.22));
+const VV = [0.07, 0.24, 0.15, 0.17], SONGS = [
+  [[7, 0, 2], [7, 2, 2], [10, 3, 3], [7, 6, 2], [7, 16, 2], [7, 18, 2], [5, 19, 2], [7, 20, 2.8]],
+  [[12, 8, 1], [15, 9, 1], [12, 10, 2], [10, 18, 1], [12, 19, 1], [15, 20, 4]],
+  [[-5, 0, 1], [7, 1, 3], [5, 4, 1], [2, 5, 1], [-1, 6, 1], [0, 7, 4]],
+  [[0, 0, 2], [3, 2, 1], [5, 3, 1], [7, 4, 2], [5, 6, 1], [3, 7, 1], [10, 16, 2], [7, 18, 1], [5, 19, 1], [3, 20, 1], [5, 21, 1], [0, 22, 2], [7, 24, 1], [3, 25, 1], [0, 26, 3]]
+];
 const CHEER = ['¡BRAVO!', '¡OTRA!', '¡BUENA!', '¡ESOOO!', '¡TOMA!'];
 const PUB = [['#c98a5e', '#421', '#3a7'], ['#e0b08a', '#da3', '#e55'], ['#b5764a', '#111', '#58c'], ['#c98a5e', '#888', '#c7a']];
 
@@ -450,8 +459,8 @@ function band(h) {
     c.bn = c.createBuffer(1, c.sampleRate, c.sampleRate); const a = c.bn.getChannelData(0); for (let i = 0; i < a.length; i++) a[i] = Math.random() * 2 - 1;
     c.ws = new Float32Array(256); for (let i = 0; i < 256; i++) c.ws[i] = Math.tanh((i / 128 - 1) * 6);
   }
-  const t0 = c.currentTime + 0.25, P = 0.3, r = VB[h] / 2, F = (s) => r * 2 ** (s / 12), R = [0, 0, 5, 5, 0, 0, 7, 0], M = c.createGain();
-  M.gain.value = [0.046, 0.038, 0.067, 0.078][h]; M.connect(c.destination);
+  const t0 = c.currentTime + 0.25, u = PU[h], r = VB[h] / 2, F = (s) => r * 2 ** (s / 12), M = c.createGain();
+  M.gain.value = [0.08, 0.062, 0.075, 0.07][h]; M.connect(c.destination);
   // oscilador: t inicio, f, d, tipo, v, filtro q->q2 (paso bajo), glissando sl, destino D, vibrato vb, ataque at
   const O = (t, f, d, y, v, q, q2, sl, D, vb, at) => {
     const o = c.createOscillator(), g = c.createGain(), b = c.createBiquadFilter(); o.type = y; o.frequency.setValueAtTime(f, t); o.detune.value = Math.random() * 14 - 7;
@@ -466,41 +475,49 @@ function band(h) {
     g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d); s.connect(b); b.connect(g); g.connect(M); s.start(t, Math.random() * 0.5); s.stop(t + d);
   };
   const K = (t, v, d, f) => O(t, f || 150, d || 0.25, 'sine', v, 0, 0, (f || 150) * 0.3);
-  // rasgueo: acorde en s, notas n, escalonado 9 ms, pluck con filtro que cae
-  const St = (t, s, v, o, d, up) => [0, 7, 12, 16, 19].forEach((n, k) => O(t + (up ? 4 - k : k) * 0.009, F(s + n + o), d, 'sawtooth', v, 5000, 900));
+  // rasgueo: acorde en s (m=1 menor), escalonado 9 ms, pluck con filtro que cae
+  const St = (t, s, v, o, d, up, m) => [0, 7, 12, 16 - (m || 0), 19].forEach((n, k) => O(t + (up ? 4 - k : k) * 0.009, F(s + n + o), d, 'sawtooth', v, 5000, 900));
+  const Tp = (t, s, n, d) => [n, n - (n % 12 == 4 ? 4 : n % 12 == 7 ? 3 : 5)].forEach((m) => O(t, F(s + m + 12), d, 'sawtooth', 0.15, 700, 3800, 0, 0, d > 0.2 ? 0.01 : 0, -0.02));
   let W;
   if (h == 1) {
     W = c.createGain(); W.gain.value = 12; const w = c.createWaveShaper(), b = c.createBiquadFilter(), hp = c.createBiquadFilter(), g = c.createGain(); w.curve = c.ws;
     b.frequency.value = 4500; hp.type = 'highpass'; hp.frequency.value = 150; g.gain.value = 0.4; W.connect(w); w.connect(hp); hp.connect(b); b.connect(g); g.connect(M);
   }
-  for (let i = 0; i < 8; i++) {
-    const T = t0 + i * P, s = R[i];
-    if (h == 0) {
-      if (i % 4 == 0 || i == 3 || i == 5) { K(T, 0.9, 0.5); O(T, F(s - 12), i == 7 ? 0.9 : 0.45, 'sine', 0.5); }
-      if (i % 4 == 2) { N(T, 0.18, 0.45, 1200, 'bandpass'); N(T + 0.012, 0.12, 0.3, 1500, 'bandpass'); }
-      for (let k = 0; k < (i % 4 == 3 ? 4 : 2); k++) N(T + k * P / (i % 4 == 3 ? 4 : 2), 0.04, 0.12, 7000);
-      if (i % 2 == 0) [0, 4, 7, 11].forEach((n) => O(T, F(s + n + 12), 0.5, 'sawtooth', 0.05, 2500, 400));
-    } else if (h == 1) {
-      for (let k = 0; k < 4; k++) K(T + k * 0.075, 0.35, 0.08, 110);
-      const op = i % 4 == 0 || i == 7;
-      for (let k = 0; k < (op ? 1 : 2); k++) [0, 7, 12, 0.1].forEach((n) => O(T + k * 0.15, F(s + n), op ? (i == 7 ? 1 : P) : 0.15, 'sawtooth', 0.3, op ? 0 : 1500, 0, 0, W, 0, -0.004));
-      if (i % 2) { N(T, 0.2, 0.5, 1800, 'bandpass'); K(T, 0.3, 0.1, 200); }
-      if (i == 0 || i == 4 || i == 7) N(T, 1.2, 0.18, 5000);
-    } else if (h == 2) {
-      O(T, F(s + (i % 2 ? 7 : 0) - 12), 0.28, 'triangle', 0.8, 800, 300);
-      St(T + 0.15, s, 0.035, 0, 0.12);
-      if (i % 2 == 0) [4, 7, 12].forEach((n) => O(T, F(s + n + 12), 0.6, 'sawtooth', 0.16, 3000, 0, 0, 0, 0.012, 0.15));
-      const Tp = (t, n, d) => [n, n - (n % 12 == 4 ? 4 : n % 12 == 7 ? 3 : 5)].forEach((m) => O(t, F(s + m + 12), d, 'sawtooth', 0.15, 700, 3800, 0, 0, d > 0.2 ? 0.01 : 0, -0.02));
-      if (i == 1 || i == 3 || i == 5) [[16, 0.12, 0.07], [19, 0.19, 0.07], [24, 0.26, 0.2]].forEach(([n, d, l]) => Tp(T + d, n, l));
-      if (i == 7) { [0, 0.1, 0.2].forEach((d) => Tp(T + d, 19, 0.08)); Tp(T + 0.3, 24, 0.8); Tp(T + 0.3, 16, 0.8); }
-    } else {
-      K(T, 0.6, 0.35, 95); N(T, 0.12, 0.5, 250, 'lowpass');
-      [0.15, 0.225].forEach((d) => { N(T + d, 0.05, 0.5, 900, 'bandpass'); N(T + d, 0.1, 0.25, 250, 'lowpass'); });
-      for (let k = 0; k < 4; k++) St(T + k * 0.075, s, k ? 0.06 : 0.09, 12, 0.1, k % 2);
-      const f = VB[h] * 2 ** ((SONG[i] + (SONG[i] % 12 > 6 ? 3 : 4)) / 12) * 2;
-      O(T + 0.01, f, i == 7 ? 0.9 : P, 'sine', 0.6, 0, 0, 0, 0, 0.008, -0.05); N(T + 0.01, 0.08, 0.35, f * 2, 'bandpass'); N(T + 0.01, i == 7 ? 0.9 : P, 0.25, f, 'bandpass');
+  for (let k = 0; k < [22, 24, 11, 29][h]; k++) {
+    const T = t0 + tm(h, k);
+    if (h == 0) { // boom-bap con swing: i m7 - bVII m7 - bVI maj7
+      const s = k < 8 ? 0 : k < 16 ? -2 : -4;
+      if ([0, 7, 10, 16, 19].includes(k)) { K(T, 0.9, 0.45); O(T, F(s - 12), 0.42, 'sine', 0.75, 0, 0, F(s - 12) * 0.94); }
+      if (k % 8 == 4) { N(T, 0.18, 0.72, 1200, 'bandpass'); N(T + 0.012, 0.12, 0.48, 1500, 'bandpass'); }
+      N(T, k % 2 ? 0.03 : 0.04, k % 2 ? 0.06 : 0.12, 7000);
+      if (k % 8 == 0) (s < -3 ? [0, 4, 7, 11] : [0, 3, 7, 10]).forEach((n) => O(T, F(s + n + 12), 0.5, 'sawtooth', 0.05, 2500, 400));
+    } else if (h == 1) { // riff con 5ª disminuida; huecos para el grito; caja arrastrada
+      const i = [0, 2, 3, 5, 6, 7, 12, 14, 15, 16, 17, 20].indexOf(k);
+      if (i >= 0) { const s = [0, 0, 3, 0, 6, 5, 10, 12, 0, 3, 0, 0][i], d = [2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 4][i];
+        [0, 7, 12, 0.1].forEach((n) => O(T, F(s + n), d * u, 'sawtooth', 0.3, d > 1 ? 0 : 1500, 0, 0, W, 0, -0.004)); }
+      if ([0, 3, 8, 10, 16, 19, 20].includes(k)) K(T, 0.4, 0.12, 110);
+      if (k % 8 == 4) { N(T + 0.025, 0.2, 0.5, 1800, 'bandpass'); K(T + 0.025, 0.3, 0.1, 200); }
+      if (k % 2 == 0) N(T, 0.04, 0.1, 8000);
+      if (k == 0 || k == 20) N(T, 0.7, 0.18, 5000);
+    } else if (h == 2) { // vals ranchero 3/4: bajo en 1, rasgueo en 2 y 3, violines y trompetas
+      const s = k < 5 || k > 6 ? 0 : 7;
+      if (k == 1 || k == 5 || k == 7) O(T, F(s - 12), 0.4, 'triangle', 0.8, 800, 300);
+      if (k == 3 || k == 5 || k == 9) { St(T, s, 0.035, 0, 0.12); St(T + u / 2, s, 0.025, 0, 0.1, 1); }
+      if (k == 1 || k == 5 || k == 7) [4, 7, 12].forEach((n) => O(T, F(s + n + 12), k == 1 ? 4 * u : 3.4 * u, 'sawtooth', 0.16, 3000, 0, 0, 0, 0.012, 0.15));
+      if (k == 0) Tp(T, 0, 19, 0.22);
+      if (k == 2) [[16, 0, 0.07], [19, 0.1, 0.07], [24, 0.2, 0.3]].forEach(([n, d, l]) => Tp(T + d, 0, n, l));
+      if (k == 8) { [0, 0.1, 0.2].forEach((d) => Tp(T + d, 0, 19, 0.08)); Tp(T + 0.3, 0, 24, 0.6); Tp(T + 0.3, 0, 16, 0.6); }
+    } else { // huayno 2/4: larga-corta-corta; la quena responde a la voz
+      const s = k < 16 || k > 21 ? 0 : 3, m = s ? 0 : 1;
+      if (k % 4 == 0) { K(T, 0.6, 0.35, 95); N(T, 0.12, 0.5, 250, 'lowpass'); O(T, F(s - 12), 0.2, 'triangle', 0.5, 600, 200); }
+      if (k % 4 > 1) { N(T, 0.05, 0.5, 900, 'bandpass'); N(T, 0.1, 0.25, 250, 'lowpass'); }
+      if (k % 4 != 1) St(T, s, k % 4 ? 0.06 : 0.09, 12, 0.1, k % 2, m);
     }
   }
+  if (h == 3) [[12, 8, 2], [15, 10, 1], [17, 11, 1], [19, 12, 2], [17, 14, 1], [15, 15, 1], [15, 22, 1], [17, 23, 1], [19, 24, 1], [15, 25, 1], [12, 26, 3]].forEach(([n, k, d]) => {
+    const T = t0 + tm(3, k) + 0.01, f = VB[3] * 2 ** (n / 12); d *= u;
+    O(T, f, d, 'sine', 0.6, 0, 0, 0, 0, 0.008, -0.05); N(T, 0.08, 0.35, f * 2, 'bandpass'); N(T, d, 0.25, f, 'bandpass');
+  });
 }
 function music(dt) {
   G.mt -= dt; if (G.mt > 0) return;
@@ -826,7 +843,9 @@ function fiesta() {
   al.forEach((p, j) => {
     const t = T(p.x, p.y - 150, LY[p.h], 16, HERO[p.h].c).setDepth(980);
     S.tweens.add({ targets: t, y: t.y - 30, alpha: 0, delay: 2200, duration: 700, onComplete: () => t.destroy() });
-    SONG.forEach((n, i) => S.time.delayedCall(250 + i * 300, () => voice(VB[p.h] * Math.pow(2, (n + j * 4) / 12), i == 7 ? 0.8 : 0.3, 0.13, p.h)));
+    const s = al[0].h;
+    SONGS[s].forEach(([n, k, d]) => { const m = (n % 12 + 12) % 12, H = j ? ((s == 2 ? [0, 5, 7] : [3, 8, 10]).includes(m) ? 4 : 3) : 0;
+      S.time.delayedCall(250 + tm(s, k) * 1000, () => voice(VB[s] * 2 ** ((n + H) / 12), Math.max(0.16, d * PU[s] * 0.9), VV[s], p.h)); });
   });
   for (let j = 0; j < 6; j++) {
     const L = j % 2, spr = S.add.image(sx + (L ? -40 : 840), 420 + (j % 3) * 9, 'q' + (j % 4) + '0').setOrigin(0.5, 1).setScale(Z).setFlipX(!L);
