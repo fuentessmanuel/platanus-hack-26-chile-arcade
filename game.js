@@ -1,7 +1,7 @@
 // TOCATA SANTIAGO — Platanus Hack 26 Arcade
 // Beat 'em up de músicos ambulantes. Todo el arte y el sonido se generan con código.
 
-const W = 800, H = 600;
+const W = 800, H = 600, Z = 4 / 3; // Z: escala de personajes (pixel de 4 px)
 
 // DO NOT replace existing keys — they match the physical arcade cabinet wiring.
 const CABINET_KEYS = {
@@ -65,7 +65,7 @@ const EN = {
   a: { k: 5, hp: 6, spd: 95, dmg: 8, rng: 240, sh: 1, say: '¡AGÜITA A LUCA!' },
   d: { k: 6, hp: 10, spd: 85, dmg: 10, rng: 58, say: '¡DULCES, LLEVE!' },
   g: { k: 7, hp: 16, spd: 105, dmg: 14, rng: 62, say: '¡AQUÍ NO SE CANTA!' },
-  B: { k: 8, hp: 110, spd: 95, dmg: 18, rng: 90, sc: 1.7, say: '¡DESALOJEN!' },
+  B: { k: 8, hp: 110, spd: 95, dmg: 18, rng: 90, sc: 1.5, say: '¡DESALOJEN!' },
 };
 const ST = [
   { n: 'LA ALAMEDA', b: 'b0', f: 'f0', p: 1, a: 0, w: ['cc', 'ccac', 'cdcac'] },
@@ -99,44 +99,88 @@ function tex(k, w, h, fn, o) {
 }
 function txt(x, s, a, b, z, c) { x.font = 'bold ' + z + 'px monospace'; x.textAlign = 'center'; x.fillStyle = c || '#fff'; x.fillText(s, a, b); }
 
+// oscurece (f<1) o aclara (f>1) un color '#rgb' o '#rrggbb'
+function dk(c, f) {
+  if (c.length == 4) c = '#' + c[1] + c[1] + c[2] + c[2] + c[3] + c[3];
+  return '#' + [1, 3, 5].map((i) => Math.min(255, parseInt(c.substr(i, 2), 16) * f | 0).toString(16).padStart(2, '0')).join('');
+}
+// cuadros: 0 quieto · 1 y 2 paso · 3 golpe · 4 dolor · 5 carga · 6 salto
 function dude(x, k, f) {
-  const [sk, hr, tp, pn, sh] = LK[k], A = f == 3, o = f == 4 ? -1 : 0;
-  const q = (a, b, w, h, c) => R(x, c, (a + 4) * 3, b * 3, w * 3, h * 3);
+  const [sk, hr, tp, pn, sh] = LK[k], A = f == 3, B = f == 5, J = f == 6, o = f == 4 ? -1 : 0;
+  // bloque con sombreado de dibujo animado: lado de atrás y base más oscuros, borde de arriba con brillo
+  const q = (a, b, w, h, c) => {
+    const X = (a + 4) * 3, Y = b * 3; R(x, c, X, Y, w * 3, h * 3);
+    if (c.length > 5 || c.length == 4 && c != '#000') {
+      if (w > 2) R(x, dk(c, 0.72), X, Y, 3, h * 3);
+      if (h > 2) R(x, dk(c, 0.8), X, Y + h * 3 - 3, w * 3, 3);
+      if (h > 3 && w > 2) R(x, dk(c, 1.25), X + 3, Y, w * 3 - 3, 3);
+    }
+  };
   const u = (a, b, w, h, c) => q(a + o, b, w, h, c);
-  if (f == 1) { q(3, 16, 3, 6, pn); q(2, 22, 4, 2, sh); q(9, 16, 3, 6, pn); q(9, 22, 4, 2, sh); }
+  // piernas
+  if (J) { q(4, 16, 3, 4, pn); q(3, 20, 4, 2, sh); q(9, 16, 3, 3, pn); q(10, 18, 4, 2, sh); }
+  else if (f == 1 || A) { q(3, 16, 3, 6, pn); q(2, 22, 4, 2, sh); q(9, 16, 3, 6, pn); q(9, 22, 4, 2, sh); }
   else if (f == 2) { q(5, 16, 3, 6, pn); q(5, 22, 4, 2, sh); q(7, 16, 3, 5, pn); q(7, 21, 4, 2, sh); }
   else { q(4, 16, 3, 6, pn); q(4, 22, 4, 2, sh); q(8, 16, 3, 6, pn); q(8, 22, 4, 2, sh); }
-  u(3, 9, 2, 6, tp); u(4, 8, 8, 8, tp);
-  u(5, 2, 6, 6, sk);
-  if (f == 4) u(8, 4, 2, 1, '#111'); else u(9, 4, 1, 1, '#111');
-  if (A || f == 4) u(9, 6, 2, 1, '#822');
-  if (k == 0) { u(3, 8, 10, 9, tp); u(7, 9, 2, 1, '#fc3'); u(7, 10, 1, 2, '#fc3'); u(4, 1, 7, 2, hr); u(10, 2, 3, 1, hr); }
-  if (k == 1) { u(4, 1, 7, 2, hr); u(3, 2, 2, 9, hr); u(6, 10, 4, 1, '#ddd'); u(7, 11, 2, 2, '#ddd'); }
-  if (k == 2) { u(4, 0, 8, 3, hr); u(4, 3, 1, 3, hr); u(7, 8, 2, 7, '#fff'); u(5, 10, 1, 1, '#fd6'); u(10, 12, 1, 1, '#fd6'); u(5, 14, 1, 1, '#fd6'); if (!A) u(9, 6, 2, 1, '#111'); }
-  if (k == 3) { u(2, 8, 12, 7, tp); u(2, 10, 12, 1, '#f2c500'); u(2, 12, 12, 1, '#2a8'); u(2, 14, 12, 1, '#fff'); u(4, 0, 7, 3, hr); u(4, 3, 1, 4, hr); u(6, 1, 3, 1, '#f2c500'); }
-  if (k == 4) { u(4, 1, 7, 2, hr); u(10, 2, 3, 1, hr); }
-  if (k == 5) { u(4, 1, 7, 2, hr); u(3, 3, 9, 1, hr); }
-  if (k == 6) { u(4, 1, 7, 2, hr); u(3, 1, 2, 3, hr); u(5, 10, 6, 6, '#fff'); }
-  if (k > 6) { u(4, 1, 7, 2, hr); u(10, 2, 3, 1, '#000'); u(4, 9, 8, 5, '#c6e00a'); u(4, 11, 8, 1, '#999'); u(4, 15, 8, 1, '#000'); }
+  // brazo de atrás, torso, cinturón, cuello y cabeza
+  u(3, 9, 2, 6, dk(tp, 0.8)); u(4, 8, 8, 8, tp); u(4, 15, 8, 1, dk(pn, 0.6));
+  u(7, 7, 3, 1, dk(sk, 0.8)); u(5, 2, 6, 6, sk); u(11, 4, 1, 1, sk);
+  // ojo con blanco y pupila; cerrado si le pegan
+  if (f == 4) u(8, 4, 2, 1, '#111'); else { u(8, 4, 1, 1, '#fff'); u(9, 4, 1, 1, '#111'); u(8, 3, 2, 1, '#3a2414'); }
+  u(9, 6, A || f == 4 ? 2 : 1, 1, A || f == 4 ? '#822' : dk(sk, 0.7));
+  if (k == 0) { // rapero: polerón ancho, gorra al revés, lentes oscuros, cadena
+    u(3, 8, 10, 9, tp); u(3, 6, 3, 3, dk(tp, 0.85)); u(6, 9, 4, 1, '#fc3'); u(7, 10, 2, 2, '#fc3');
+    u(4, 1, 7, 2, hr); u(1, 2, 4, 1, dk(hr, 0.6)); u(6, 1, 2, 1, '#fff'); u(8, 4, 3, 1, '#111'); u(10, 4, 1, 1, '#6af');
+  }
+  if (k == 1) { // metalero: melena, barba, polera con calavera, muñequera
+    u(4, 1, 7, 2, hr); u(3, 2, 3, 10, hr); u(5, 2, 1, 3, hr); u(8, 6, 3, 2, '#1a1a1a');
+    u(6, 8, 5, 2, '#ddd'); u(7, 10, 3, 1, '#ddd'); u(7, 8, 1, 1, '#111'); u(9, 8, 1, 1, '#111');
+  }
+  if (k == 2) { // romántico: jopo, patillas, bigote, chaqueta brillante con solapas
+    u(4, 0, 8, 3, hr); u(10, 0, 2, 2, hr); u(5, 3, 1, 3, hr); u(9, 5, 2, 1, '#111');
+    u(7, 8, 2, 7, '#fff'); u(6, 8, 1, 4, dk(tp, 0.65)); u(9, 8, 1, 4, dk(tp, 0.65));
+    u(5, 10, 1, 1, '#fd6'); u(10, 12, 1, 1, '#fd6'); u(5, 14, 1, 1, '#fd6'); u(10, 9, 1, 1, '#fd6');
+  }
+  if (k == 3) { // andino: poncho a rayas, chullo con orejeras y pompón
+    u(2, 8, 12, 7, tp); u(2, 10, 12, 1, '#f2c500'); u(2, 12, 12, 1, '#2a8'); u(2, 14, 12, 1, '#fff');
+    u(4, 0, 7, 3, hr); u(4, 2, 7, 1, '#f2c500'); u(5, 3, 2, 4, hr); u(5, 7, 1, 2, '#f2c500'); u(6, -1, 3, 1, '#f2c500'); u(7, -1, 1, 1, '#fff');
+  }
+  if (k == 4) { u(4, 1, 7, 2, hr); u(10, 2, 3, 1, hr); u(8, 6, 3, 1, dk(sk, 0.8)); } // chiclero
+  if (k == 5) { u(3, 2, 9, 1, hr); u(4, 0, 7, 2, hr); u(4, 9, 8, 6, '#eee'); } // agüita: sombrero de pescador
+  if (k == 6) { u(4, 1, 7, 2, hr); u(2, 1, 3, 3, hr); u(4, 3, 1, 4, hr); u(6, 6, 1, 1, '#fd4'); u(5, 10, 6, 6, '#fff'); u(5, 10, 6, 1, '#f7a'); } // señora de los dulces
+  if (k == 7) { // guardia: gorra con placa, lentes, chaleco reflectante
+    u(4, 1, 7, 2, hr); u(10, 2, 3, 1, '#000'); u(6, 1, 1, 1, '#fc3'); u(8, 4, 3, 1, '#111');
+    u(4, 9, 8, 5, '#c6e00a'); u(4, 11, 8, 1, '#ccc');
+  }
+  if (k == 8) { // inspector jefe: quepis con galón, bigotazo, terno, corbata
+    u(3, 0, 9, 2, hr); u(3, 2, 9, 1, '#fc3'); u(10, 3, 3, 1, '#000'); u(8, 5, 4, 1, '#eee');
+    u(7, 8, 2, 2, '#fff'); u(7, 10, 1, 4, '#d22'); u(5, 12, 1, 1, '#fc3'); u(10, 12, 1, 1, '#fc3');
+  }
+  // brazo de adelante según el cuadro
   if (A && k == 3) u(10, 8, 3, 2, tp);
   else if (A) { u(10, 9, 5, 2, tp); u(15, 9, 1, 2, sk); }
+  else if (B) { u(1, 8, 3, 2, tp); u(0, 8, 1, 2, sk); }
+  else if (J) { u(9, 5, 2, 4, tp); u(9, 4, 2, 1, sk); }
   else { u(9, 9, 2, 5, tp); u(9, 14, 2, 1, sk); }
+  // instrumentos y objetos
   if (k == 0 || k == 2) {
     const m = k ? '#fd6' : '#bbb';
-    if (A) { u(16, 8, 3, 1, '#333'); u(19, 7, 2, 3, m); } else { u(11, 10, 1, 4, '#333'); u(10, 8, 3, 2, m); }
+    if (A) { u(16, 8, 3, 1, '#333'); u(19, 7, 2, 3, m); } else if (!B && !J) { u(11, 10, 1, 4, '#333'); u(10, 8, 3, 2, m); }
   }
   if (k == 1) {
     if (A) { u(16, 9, 2, 1, '#853'); u(17, 6, 4, 7, '#c22'); u(18, 8, 2, 3, '#111'); }
-    else { u(4, 11, 5, 5, '#c22'); u(9, 12, 6, 1, '#853'); u(15, 11, 2, 3, '#222'); }
+    else { u(4, 11, 5, 5, '#c22'); u(5, 12, 2, 2, '#111'); u(9, 12, 6, 1, '#853'); u(15, 11, 2, 3, '#222'); }
+    u(9, 13, 2, 1, '#888');
   }
   if (k == 3) {
     const a = A ? 11 : 10, b = A ? 5 : 10;
-    u(a, b, 5, 4, '#d9b26a'); u(a + 1, b, 1, 4, '#a57c3a'); u(a + 3, b, 1, 4, '#a57c3a'); u(a + 4, b + 3, 1, 1, '#0000');
+    u(a, b, 5, 4, '#d9b26a'); u(a + 1, b, 1, 4, '#a57c3a'); u(a + 3, b, 1, 4, '#a57c3a');
   }
   if (k == 4) { u(9, 12, 6, 2, '#eee'); u(10, 11, 1, 1, '#f4a'); u(12, 11, 1, 1, '#4cf'); u(14, 11, 1, 1, '#7d4'); }
   if (k == 5) { u(9, 12, 5, 5, '#27c'); u(9, 12, 5, 1, '#fff'); if (A) u(16, 7, 1, 3, '#8df'); }
   if (k == 6) { u(9, 12, 6, 3, '#a63'); u(10, 11, 1, 1, '#f44'); u(12, 11, 1, 1, '#fd4'); u(14, 11, 1, 1, '#4c8'); }
-  if (k > 6) { if (A) u(16, 9, 5, 1, '#111'); else u(11, 12, 1, 5, '#111'); }
+  if (k == 7) { if (A) u(16, 9, 5, 1, '#111'); else u(11, 12, 1, 5, '#111'); }
+  if (k == 8 && !A) { u(10, 11, 3, 4, '#a63'); u(10, 11, 3, 3, '#fff'); }
 }
 
 function banana(x, c) {
@@ -146,7 +190,7 @@ function banana(x, c) {
 }
 
 function art() {
-  for (let k = 0; k < 9; k++) for (let f = 0; f < 5; f++) tex('d' + k + f, 78, 78, (x) => dude(x, k, f), 3);
+  for (let k = 0; k < 9; k++) for (let f = 0; f < 7; f++) tex('d' + k + f, 78, 78, (x) => dude(x, k, f), 3);
   tex('nt', 18, 22, (x) => { R(x, '#fff', 11, 0, 3, 16); R(x, '#fff', 11, 0, 7, 4); x.fillStyle = '#fff'; x.beginPath(); x.arc(8, 16, 6, 0, 7); x.fill(); });
   tex('bt', 22, 10, (x) => { R(x, '#8df', 4, 1, 16, 8); R(x, '#fff', 0, 3, 4, 4); R(x, '#27c', 9, 1, 5, 8); });
   tex('wv', 30, 50, (x) => { x.strokeStyle = '#ffe14d'; x.lineWidth = 4; for (let i = 0; i < 3; i++) { x.beginPath(); x.arc(-8 + i * 9, 25, 20, -1, 1); x.stroke(); } });
@@ -453,8 +497,8 @@ function end(win) {
 // ---------- Entidades ----------
 function mkP(i, h) {
   const p = { i, h, x: S.cameras.main.scrollX + 110 + i * 50, y: 470 + i * 50, z: 0, vz: 0, f: 1, hp: 100, sp: 0, lv: 3, cd: 0, at: 0, hurt: 0, inv: 1.5, dead: 0, rt: 0 };
-  p.sh = S.add.ellipse(0, 0, 44, 12, 0, 0.35).setDepth(1);
-  p.spr = S.add.image(0, 0, 'd' + h + '0').setOrigin(0.46, 1);
+  p.sh = S.add.ellipse(0, 0, 56, 14, 0, 0.35).setDepth(1);
+  p.spr = S.add.image(0, 0, 'd' + h + '0').setOrigin(0.46, 1).setScale(Z);
   p.tag = T(0, 0, 'P' + (i + 1), 12, i ? '#ff6ec7' : '#e1ff00');
   p.nm = T(i ? 780 : 20, 16, 'P' + (i + 1) + ' ' + HERO[h].n, 13, HERO[h].c).setOrigin(i ? 1 : 0, 0.5).setScrollFactor(0).setDepth(960);
   p.o = [p.sh, p.spr, p.tag, p.nm];
@@ -465,8 +509,8 @@ function spawn(str) {
   [...str].forEach((ch, j) => {
     const d = EN[ch], L = j % 2;
     const e = { d, x: sx + (L ? -50 - j * 30 : 850 + j * 30), y: 425 + Math.random() * 140, f: L ? 1 : -1, hp: d.hp, stun: 0, kx: 0, wind: 0, cool: 0.6 + Math.random(), oy: Math.random() * 24 - 12, dead: 0 };
-    e.sh = S.add.ellipse(0, 0, 44 * (d.sc || 1), 12, 0, 0.35).setDepth(1);
-    e.spr = S.add.image(0, 0, 'd' + d.k + '0').setOrigin(0.46, 1).setScale(d.sc || 1);
+    e.sh = S.add.ellipse(0, 0, 56 * (d.sc || 1), 14, 0, 0.35).setDepth(1);
+    e.spr = S.add.image(0, 0, 'd' + d.k + '0').setOrigin(0.46, 1).setScale((d.sc || 1) * Z);
     e.o = [e.sh, e.spr]; G.E.push(e);
     if (ch == 'B') { ft(sx + 400, 220, '¡EL INSPECTOR JEFE!', '#f55', 34); S.cameras.main.shake(400, 0.01); }
   });
@@ -501,7 +545,7 @@ function hurtP(p, dmg, dir) {
   if (p.hp <= 0) { p.dead = 1; p.lv--; p.rt = 1.8; p.hp = 0; ft(p.x, p.y - 100, p.lv > 0 ? '¡AY!' : '¡FUERA!', '#f55', 22); }
 }
 function attack(p) {
-  const h = HERO[p.h]; p.cd = h.cd; p.at = 170;
+  const h = HERO[p.h]; p.cd = h.cd; p.at = p.am = 170;
   tone(p.h == 1 ? 160 : 520, 0.07, WAVE[p.h], 0.05, p.h == 1 ? 90 : 260);
   if (!h.rch) { shot(p.x + p.f * 34, p.y, 44, p.f * 430, h.dmg, 0, 'nt', 0, 0.6); tone(880 + Math.random() * 300, 0.12, 'sine', 0.07); return; }
   G.E.forEach((e) => {
@@ -510,8 +554,8 @@ function attack(p) {
   });
 }
 function special(p) {
-  const h = p.h; p.sp = 0; p.at = 300; p.inv = Math.max(p.inv, 0.8);
-  ft(p.x, p.y - 120, '¡' + HERO[h].sp + '!', HERO[h].c, 22);
+  const h = p.h; p.sp = 0; p.at = p.am = 300; p.inv = Math.max(p.inv, 0.8);
+  ft(p.x, p.y - 140, '¡' + HERO[h].sp + '!', HERO[h].c, 22);
   S.cameras.main.flash(180, 255, 255, 200);
   [330, 440, 660].forEach((f, i) => S.time.delayedCall(i * 60, () => tone(f * (h + 2) / 2, 0.25, WAVE[h], 0.08)));
   if (h == 0) for (let i = -1; i < 2; i++) shot(p.x + p.f * 30, p.y + i * 30, 40, p.f * 480, 5, 0, 'wv', 1, 1);
@@ -545,9 +589,10 @@ function upP(p, dt) {
   }
   if (p.z > 0 || p.vz > 0) { p.vz -= 1500 * dt; p.z += p.vz * dt; if (p.z <= 0) { p.z = 0; p.vz = 0; } }
   p.x = Phaser.Math.Clamp(p.x, cam.scrollX + 26, cam.scrollX + 774); p.y = Phaser.Math.Clamp(p.y, 412, 578);
-  const fr = p.hurt > 0 ? 4 : p.at > 0 ? 3 : p.z > 0 ? 1 : (mx || my) ? 1 + ((now / 130 | 0) % 2) : 0;
-  p.spr.setTexture('d' + p.h + fr).setPosition(p.x, p.y - p.z).setFlipX(p.f < 0).setDepth(p.y).setAlpha(p.inv > 0 && now % 160 < 80 ? 0.4 : 1);
-  p.sh.setPosition(p.x, p.y); p.tag.setPosition(p.x, p.y - p.z - 88).setDepth(p.y);
+  const wk = (now / 110 | 0) % 4, fr = p.hurt > 0 ? 4 : p.at > 0 ? (p.at > p.am - 40 ? 5 : 3) : p.z > 0 ? 6 : (mx || my) ? [1, 0, 2, 0][wk] : 0;
+  const bob = (mx || my) && !p.z && p.at <= 0 && wk % 2 ? 4 : 0;
+  p.spr.setTexture('d' + p.h + fr).setPosition(p.x, p.y - p.z - bob).setFlipX(p.f < 0).setDepth(p.y).setAlpha(p.inv > 0 && now % 160 < 80 ? 0.4 : 1);
+  p.sh.setPosition(p.x, p.y); p.tag.setPosition(p.x, p.y - p.z - 112).setDepth(p.y);
   // recoger
   if (p.z < 24) G.I.forEach((it) => {
     if (it.gone || it.key == 'pl' || Math.abs(it.x - p.x) > 28 || Math.abs(it.y - p.y) > 22) return;
@@ -574,7 +619,7 @@ function upE(e, dt) {
     const t = al.reduce((a, p) => (Math.abs(p.x - e.x) < Math.abs(a.x - e.x) ? p : a));
     const dx = t.x - e.x, dy = t.y - e.y;
     if (e.wind > 0) {
-      e.wind -= dt; tint = 1; fr = e.wind < 0.14 ? 3 : 0;
+      e.wind -= dt; tint = 1; fr = e.wind < 0.14 ? 3 : 5;
       if (e.wind <= 0) {
         e.cool = 1 + Math.random() * 1.2;
         if (d.sh) { shot(e.x + e.f * 30, e.y, 40, e.f * 300, d.dmg, 1, 'bt', 0, 2.4); tone(500, 0.1, 'sine', 0.05, 250); }
@@ -583,10 +628,10 @@ function upE(e, dt) {
     } else {
       e.f = dx > 0 ? 1 : -1; e.cool -= dt;
       const sx = S.cameras.main.scrollX, gx = Phaser.Math.Clamp(t.x - e.f * (d.rng - 12), sx + 40, sx + 760), gy = t.y + (d.sh ? 0 : e.oy), ax = gx - e.x, ay = gy - e.y, m = Math.hypot(ax, ay);
-      if (m > 12) { e.x += (ax / m) * d.spd * dt; e.y += (ay / m) * d.spd * 0.7 * dt; fr = 1 + ((now / 150 | 0) % 2); }
+      if (m > 12) { e.x += (ax / m) * d.spd * dt; e.y += (ay / m) * d.spd * 0.7 * dt; fr = [1, 0, 2, 0][(now / 140 | 0) % 4]; }
       if (Math.abs(ax) < 30 && Math.abs(dy) < 22 && e.cool <= 0 && onScr(e)) {
         // un solo grito a la vez, para que los globos no se pisen
-        e.wind = 0.42; if (now > (G.say || 0) && Math.random() < 0.5) { G.say = now + 1400; ft(e.x, e.y - 96 * (d.sc || 1), d.say, '#fff', 13); }
+        e.wind = 0.42; if (now > (G.say || 0) && Math.random() < 0.5) { G.say = now + 1400; ft(e.x, e.y - 124 * (d.sc || 1), d.say, '#fff', 13); }
       }
     }
   }
