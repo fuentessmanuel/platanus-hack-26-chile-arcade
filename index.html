@@ -17,6 +17,8 @@
   #pad { display: none; }
   /* teléfonos y tablets: sin ayuda de teclado, con palanca y botones en pantalla */
   .touch, .touch body { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; overscroll-behavior: none; }
+  .touch * { touch-action: none; }
+  .touch body { position: fixed; inset: 0; }
   .touch #game-root { width: min(100vw, calc(100dvh * 4 / 3)); }
   .touch .keys { display: none; }
   .touch #pad { display: block; }
@@ -55,8 +57,8 @@
   // el juego lee teclas del gabinete: cada control en pantalla simula la tecla del jugador 1
   const send = (t, k) => window.dispatchEvent(new KeyboardEvent(t, { key: k }));
   const stop = (e) => e.preventDefault(), cap = (el, e) => { try { el.setPointerCapture(e.pointerId); } catch (x) {} };
-  document.addEventListener('contextmenu', stop);
-  document.addEventListener('touchmove', stop, { passive: false });
+  // sin zoom ni arrastre de página: ni pellizco, ni doble toque, ni gestos de Safari
+  ['contextmenu', 'touchstart', 'touchmove', 'touchend', 'gesturestart', 'gesturechange', 'gestureend', 'dblclick'].forEach((t) => document.addEventListener(t, stop, { passive: false }));
   document.querySelectorAll('.btn').forEach((b) => {
     const k = b.dataset.k;
     const up = (e) => { stop(e); if (b.classList.contains('on')) { b.classList.remove('on'); send('keyup', k); } };
