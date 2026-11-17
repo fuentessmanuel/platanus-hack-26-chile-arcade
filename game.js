@@ -437,6 +437,11 @@ function art() {
       R(x, '#fff', a + 150, 96, 220, 20); R(x, '#e3001b', a + 160, 105, 200, 3);
       for (let j = 0; j < 9; j++) R(x, '#e3001b', a + 162 + j * 24, 102, 6, 9);
       R(x, '#999', a + 134, 86, 6, 314);
+      // cartel pegado en la ventana: no dar propina a músicos / no comprar a ambulantes
+      R(x, '#e3001b', a + 176, 146, 168, 56); R(x, '#fff', a + 179, 149, 162, 50);
+      txt(x, i ? '$' : '♪', a + 203, 182, 22, '#111');
+      x.strokeStyle = '#e3001b'; x.lineWidth = 4; x.beginPath(); x.arc(a + 203, 174, 17, 0, 7); x.moveTo(a + 191, 162); x.lineTo(a + 215, 186); x.stroke();
+      txt(x, i ? 'NO COMPRE A' : 'NO DÉ PROPINA', a + 282, 171, 12, '#111'); txt(x, i ? 'AMBULANTES' : 'A MÚSICOS', a + 282, 187, 12, '#111');
     }
     R(x, '#999', 0, 86, W, 5);
     R(x, '#3b3e45', 0, 400, W, 200); R(x, '#f2c500', 0, 400, W, 4);
