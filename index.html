@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Señores Pasajeros</title>
+<meta name="description" content="Músicos ambulantes sobreviviendo a la ciudad. Beat 'em up para 1 o 2 jugadores.">
+<meta property="og:title" content="Señores Pasajeros">
+<meta property="og:description" content="Músicos ambulantes sobreviviendo a la ciudad.">
+<meta property="og:image" content="cover.png">
+<style>
+  html, body { margin: 0; height: 100%; background: #0b0b1a; color: #e9e4d4; font: 14px/1.5 ui-monospace, Menlo, Consolas, monospace; }
+  body { display: flex; flex-direction: column; align-items: center; }
+  #game-root { width: min(100vw, calc((100vh - 96px) * 4 / 3)); aspect-ratio: 4 / 3; }
+  .keys { display: flex; flex-wrap: wrap; gap: 4px 28px; justify-content: center; padding: 10px 16px; text-align: center; }
+  .keys b { color: #ffd76a; }
+  .movil { display: none; color: #ff9a8a; padding: 0 16px 8px; text-align: center; }
+  @media (pointer: coarse) { .movil { display: block; } }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.87.0/phaser.min.js"></script>
+</head>
+<body>
+<div id="game-root"></div>
+<div class="keys">
+  <span><b>Jugador 1</b> · mover W A S D · golpe U · salto I · especial O · empezar Enter</span>
+  <span><b>Jugador 2</b> · mover flechas · golpe R · salto T · especial Y · entrar con 2</span>
+</div>
+<div class="movil">Se juega con teclado: ábrelo en un computador.</div>
+<script src="game.js"></script>
+</body>
+</html>
