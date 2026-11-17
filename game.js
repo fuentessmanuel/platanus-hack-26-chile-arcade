@@ -192,6 +192,7 @@ function dude(x, k, f) {
     u(3, 8, 3, 1, dk(tp, 0.7)); u(10, 8, 3, 1, dk(tp, 0.7)); u(4, 11, 9, 1, '#ff7a1a'); u(4, 12, 9, 1, '#e8e8e8');
     u(5, 9, 1, 1, '#fc3'); u(9, 8, 1, 3, '#222'); u(9, 7, 1, 1, '#222'); u(7, 15, 2, 1, '#bbb');
   }
+
   // jefes: kioskero (delantal y bigote), micrero (corbata y lentes), guardia del súper (chaleco negro), vendedor (saco al hombro)
   if (k == 9 || k > 10) { u(4, 1, 7, 2, hr); u(10, 2, 3, 1, hr); }
   if (k == 9) { u(5, 10, 6, 7, hr); u(7, 13, 2, 2, '#fbe7a1'); }
