@@ -678,7 +678,7 @@ function end(win) {
   G.hs.push(G.score); G.hs.sort((a, b) => b - a); G.hs = G.hs.slice(0, 5);
   getStorage().set('tocata-hs', G.hs);
   wood();
-  U(TG(400, 150, win ? '¡TOCATA COMPLETA!' : 'FIN DE LA TOCATA', 50));
+  U(TG(400, 150, win ? '¡ESTACIÓN TERMINAL!' : 'FIN DEL RECORRIDO', 50));
   U(T(400, 215, win ? 'Llegaste a tocar a la Platanus Hack.\nTe pagaron en plátanos.' : 'Te sacaron del vagón. Mañana se toca de nuevo.', 16));
   U(T(400, 300, 'PROPINAS: $' + G.score, 32, '#ffd76a'));
   U(T(400, 390, 'MEJORES\n' + G.hs.map((n, i) => (i + 1) + '.  $' + n).join('\n'), 16, '#fff'));
