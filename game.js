@@ -615,11 +615,10 @@ function toSelect() {
   U(TG(400, 56, 'ELIGE TU MÚSICO', 40));
   HERO.forEach((h, i) => {
     const a = 115 + i * 190;
-    // cartel de "SE BUSCA" en papel viejo
+    // tarjeta del músico en papel viejo
     U(S.add.rectangle(a + 5, 296, 170, 330, 0, 0.5));
     U(S.add.rectangle(a, 290, 170, 330, 0xe6c48c).setStrokeStyle(4, 0x5a2e12));
     U(S.add.rectangle(a, 224, 140, 150, 0xc99a5e));
-    U(T(a, 146, 'SE BUSCA', 20, '#5a2e12').setFontFamily('Georgia, serif').setStroke('#5a2e12', 0));
     U(S.add.image(a, 300, 'd' + i + '0').setOrigin(0.46, 1).setScale(1.85));
     U(T(a, 330, h.n, 18, h.c)); U(T(a, 356, h.d, 11, '#fff'));
     U(T(a, 386, 'ARMA: ' + h.w, 12, '#ffd76a')); U(T(a, 406, 'ESPECIAL', 11, '#fff')); U(T(a, 426, h.sp, 14, '#ffe07a'));
